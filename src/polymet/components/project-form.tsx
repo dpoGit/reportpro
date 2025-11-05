@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useForm, Controller } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import ImageUpload from "@/polymet/components/image-upload"; // Import ImageUpload
+import ImageUpload from "@/polymet/components/image-upload";
 
 interface ProjectFormProps {
   onSubmit?: (project: ProjectFormData) => void;
@@ -28,7 +28,7 @@ interface ProjectFormProps {
 }
 
 export interface ProjectFormData {
-  id?: string; // Make ID optional for new projects
+  id?: string;
   title: string;
   reference: string;
   date: Date;
@@ -40,77 +40,44 @@ export interface ProjectFormData {
     phone: string;
   };
   notes: string;
-  thumbnail: string | null; // Add thumbnail field
+  thumbnail: string | null;
 }
 
 export default function ProjectForm({
   onSubmit,
   initialData,
 }: ProjectFormProps) {
-  const [formData, setFormData] = useState<ProjectFormData>({
-    id: initialData?.id || undefined, // Initialize ID
-    title: initialData?.title || "",
-    reference: initialData?.reference || "",
-    date: initialData?.date ? new Date(initialData.date) : new Date(), // Ensure date is a Date object
-    location: initialData?.location || "",
-    client: {
-      name: initialData?.client?.name || "",
-      contact: initialData?.client?.contact || "",
-      email: initialData?.client?.email || "",
-      phone: initialData?.client?.phone || "",
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm<ProjectFormData>({
+    defaultValues: {
+      id: initialData?.id || undefined,
+      title: initialData?.title || "",
+      reference: initialData?.reference || "",
+      date: initialData?.date ? new Date(initialData.date) : new Date(),
+      location: initialData?.location || "",
+      client: {
+        name: initialData?.client?.name || "",
+        contact: initialData?.client?.contact || "",
+        email: initialData?.client?.email || "",
+        phone: initialData?.client?.phone || "",
+      },
+      notes: initialData?.notes || "",
+      thumbnail: initialData?.thumbnail || null,
     },
-    notes: initialData?.notes || "",
-    thumbnail: initialData?.thumbnail || null, // Initialize thumbnail
   });
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-    field: keyof Omit<ProjectFormData, "id" | "date" | "client" | "thumbnail">
-  ) => {
-    setFormData({
-      ...formData,
-      [field]: e.target.value,
-    });
-  };
-
-  const handleClientInputChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    field: keyof ProjectFormData["client"]
-  ) => {
-    setFormData({
-      ...formData,
-      client: {
-        ...formData.client,
-        [field]: e.target.value,
-      },
-    });
-  };
-
-  const handleDateChange = (date: Date | undefined) => {
-    if (date) {
-      setFormData({
-        ...formData,
-        date,
-      });
-    }
-  };
-
-  const handleImageChange = (imageData: string | null) => {
-    setFormData({
-      ...formData,
-      thumbnail: imageData,
-    });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleFormSubmit = (data: ProjectFormData) => {
     if (onSubmit) {
-      onSubmit(formData);
+      onSubmit(data);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit(handleFormSubmit)}>
       <Card>
         <CardHeader>
           <CardTitle>Project Details</CardTitle>
@@ -124,11 +91,12 @@ export default function ProjectForm({
               <Label htmlFor="title">Project Title</Label>
               <Input
                 id="title"
-                value={formData.title}
-                onChange={(e) => handleInputChange(e, "title")}
+                {...register("title", { required: "Project title is required" })}
                 placeholder="Enter project title"
-                required
               />
+              {errors.title && (
+                <p className="text-sm text-red-500">{errors.title.message}</p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -136,41 +104,45 @@ export default function ProjectForm({
                 <Label htmlFor="reference">Reference</Label>
                 <Input
                   id="reference"
-                  value={formData.reference}
-                  onChange={(e) => handleInputChange(e, "reference")}
+                  {...register("reference")}
                   placeholder="Enter reference code"
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="date">Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !formData.date && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-
-                      {formData.date ? (
-                        format(formData.date, "PPP")
-                      ) : (
-                        <span>Pick a date</span>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={formData.date}
-                      onSelect={handleDateChange}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
+                <Controller
+                  name="date"
+                  control={control}
+                  render={({ field }) => (
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {field.value ? (
+                            format(field.value, "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  )}
+                />
               </div>
             </div>
 
@@ -178,11 +150,9 @@ export default function ProjectForm({
               <Label htmlFor="location">Location</Label>
               <div className="relative">
                 <MapPinIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-
                 <Input
                   id="location"
-                  value={formData.location}
-                  onChange={(e) => handleInputChange(e, "location")}
+                  {...register("location")}
                   placeholder="Enter project location"
                   className="pl-10"
                 />
@@ -190,13 +160,18 @@ export default function ProjectForm({
             </div>
           </div>
 
-          {/* Image Upload Section */}
           <div className="space-y-2">
             <Label htmlFor="project-image">Project Image</Label>
-            <ImageUpload
-              initialImage={formData.thumbnail || undefined}
-              onImageChange={handleImageChange}
-              aspectRatio="wide"
+            <Controller
+              name="thumbnail"
+              control={control}
+              render={({ field }) => (
+                <ImageUpload
+                  initialImage={field.value || undefined}
+                  onImageChange={field.onChange}
+                  aspectRatio="wide"
+                />
+              )}
             />
           </div>
 
@@ -207,8 +182,7 @@ export default function ProjectForm({
                 <Label htmlFor="client-name">Client Name</Label>
                 <Input
                   id="client-name"
-                  value={formData.client.name}
-                  onChange={(e) => handleClientInputChange(e, "name")}
+                  {...register("client.name")}
                   placeholder="Enter client name"
                 />
               </div>
@@ -218,8 +192,7 @@ export default function ProjectForm({
                   <Label htmlFor="client-contact">Contact Person</Label>
                   <Input
                     id="client-contact"
-                    value={formData.client.contact}
-                    onChange={(e) => handleClientInputChange(e, "contact")}
+                    {...register("client.contact")}
                     placeholder="Enter contact person"
                   />
                 </div>
@@ -229,8 +202,7 @@ export default function ProjectForm({
                   <Input
                     id="client-phone"
                     type="tel"
-                    value={formData.client.phone}
-                    onChange={(e) => handleClientInputChange(e, "phone")}
+                    {...register("client.phone")}
                     placeholder="Enter phone number"
                   />
                 </div>
@@ -241,8 +213,7 @@ export default function ProjectForm({
                 <Input
                   id="client-email"
                   type="email"
-                  value={formData.client.email}
-                  onChange={(e) => handleClientInputChange(e, "email")}
+                  {...register("client.email")}
                   placeholder="Enter email address"
                 />
               </div>
@@ -253,8 +224,7 @@ export default function ProjectForm({
             <Label htmlFor="notes">Notes</Label>
             <Textarea
               id="notes"
-              value={formData.notes}
-              onChange={(e) => handleInputChange(e, "notes")}
+              {...register("notes")}
               placeholder="Enter any additional notes about the project"
               rows={4}
             />
