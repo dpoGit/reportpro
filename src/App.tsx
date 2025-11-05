@@ -16,13 +16,9 @@ import Media from "@/polymet/pages/media";
 import Settings from "@/polymet/pages/settings";
 import Profile from "@/polymet/pages/profile";
 import Users from "@/polymet/pages/users";
-import HelpAndSupport from "@/polymet/pages/help-and-support"; // Import the HelpAndSupport component
-import React, { useState } from "react";
-import { PROJECTS, Project } from "@/polymet/data/site-audit-data";
+import HelpAndSupport from "@/polymet/pages/help-and-support";
 
 export default function SiteAuditPrototype() {
-  const [projects, setProjects] = useState<Project[]>(PROJECTS);
-
   return (
     <Router>
       <Routes>
@@ -32,7 +28,7 @@ export default function SiteAuditPrototype() {
           path="/dashboard"
           element={
             <SiteAuditLayout>
-              <Dashboard projects={projects} setProjects={setProjects} />
+              <Dashboard />
             </SiteAuditLayout>
           }
         />
@@ -41,7 +37,7 @@ export default function SiteAuditPrototype() {
           path="/projects"
           element={
             <SiteAuditLayout>
-              <Projects projects={projects} setProjects={setProjects} />
+              <Projects />
             </SiteAuditLayout>
           }
         />
@@ -50,7 +46,7 @@ export default function SiteAuditPrototype() {
           path="/project/:projectId"
           element={
             <SiteAuditLayout>
-              <ProjectDetails projects={projects} setProjects={setProjects} />
+              <ProjectDetails />
             </SiteAuditLayout>
           }
         />
@@ -59,7 +55,7 @@ export default function SiteAuditPrototype() {
           path="/issue/:projectId/:issueId"
           element={
             <SiteAuditLayout>
-              <IssueDetails projects={projects} setProjects={setProjects} />
+              <IssueDetails />
             </SiteAuditLayout>
           }
         />
@@ -77,7 +73,7 @@ export default function SiteAuditPrototype() {
           path="/report/:projectId"
           element={
             <SiteAuditLayout>
-              <ReportDetails projects={projects} />
+              <ReportDetails />
             </SiteAuditLayout>
           }
         />

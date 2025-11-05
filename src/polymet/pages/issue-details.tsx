@@ -34,13 +34,10 @@ import {
 } from "lucide-react";
 import IssueForm from "@/polymet/components/issue-form";
 import { Project, Issue } from "@/polymet/data/site-audit-data";
+import { useProjectStore } from "@/store/project-store";
 
-interface IssueDetailsProps {
-  projects: Project[];
-  setProjects: React.Dispatch<React.SetStateAction<Project[]>>;
-}
-
-export default function IssueDetails({ projects, setProjects }: IssueDetailsProps) {
+export default function IssueDetails() {
+  const { projects, updateProject } = useProjectStore();
   const { projectId, issueId } = useParams<{ projectId: string; issueId: string }>();
   const navigate = useNavigate();
   const [project, setProject] = useState<Project | undefined>(undefined);
@@ -98,9 +95,7 @@ export default function IssueDetails({ projects, setProjects }: IssueDetailsProp
     );
     const updatedProject = { ...project, issues: updatedIssues };
 
-    setProjects(
-      projects.map((p) => (p.id === updatedProject.id ? updatedProject : p))
-    );
+    updateProject(updatedProject);
     setProject(updatedProject);
     setIssue(updatedIssue);
     setIsIssueFormOpen(false);
@@ -113,9 +108,7 @@ export default function IssueDetails({ projects, setProjects }: IssueDetailsProp
       issues: updatedIssues,
       issueCount: updatedIssues.length,
     };
-    setProjects(
-      projects.map((p) => (p.id === updatedProject.id ? updatedProject : p))
-    );
+    updateProject(updatedProject);
     navigate(`/project/${projectId}`);
   };
 

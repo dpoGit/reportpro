@@ -40,15 +40,12 @@ import SiteAuditCard from "@/polymet/components/site-audit-card";
 import IssueListItem from "@/polymet/components/issue-list-item";
 import ProjectForm, { ProjectFormData } from "@/polymet/components/project-form"; // Import ProjectFormData
 import IssueForm from "@/polymet/components/issue-form";
-import { Project, Issue, PROJECTS } from "@/polymet/data/site-audit-data";
+import { Project, Issue } from "@/polymet/data/site-audit-data";
 import { useIsMobile } from "@/hooks/use-mobile"; // Import the hook
+import { useProjectStore } from "@/store/project-store";
 
-interface DashboardProps {
-  projects: Project[];
-  setProjects: React.Dispatch<React.SetStateAction<Project[]>>;
-}
-
-export default function Dashboard({ projects, setProjects }: DashboardProps) {
+export default function Dashboard() {
+  const { projects, addProject, updateProject, deleteProject } = useProjectStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isProjectFormOpen, setIsProjectFormOpen] = useState(false);
@@ -79,9 +76,7 @@ export default function Dashboard({ projects, setProjects }: DashboardProps) {
           projects.find((p) => p.id === projectData.id)?.issueCount || 0,
         issues: projects.find((p) => p.id === projectData.id)?.issues || [],
       };
-      setProjects(
-        projects.map((p) => (p.id === updatedProject.id ? updatedProject : p))
-      );
+      updateProject(updatedProject);
       if (selectedProject?.id === updatedProject.id) {
         setSelectedProject(updatedProject);
       }
@@ -99,7 +94,7 @@ export default function Dashboard({ projects, setProjects }: DashboardProps) {
         issueCount: 0,
         issues: [],
       };
-      setProjects([newProject, ...projects]);
+      addProject(newProject);
     }
     setIsProjectFormOpen(false);
     setEditingProject(null); // Clear editing state
@@ -131,15 +126,13 @@ export default function Dashboard({ projects, setProjects }: DashboardProps) {
       issueCount: selectedProject.issueCount + 1,
     };
 
-    setProjects(
-      projects.map((p) => (p.id === selectedProject.id ? updatedProject : p))
-    );
+    updateProject(updatedProject);
     setSelectedProject(updatedProject);
     setIsIssueFormOpen(false);
   };
 
   const handleDeleteProject = (projectId: string) => {
-    setProjects(projects.filter((p) => p.id !== projectId));
+    deleteProject(projectId);
     if (selectedProject?.id === projectId) {
       setSelectedProject(null);
     }

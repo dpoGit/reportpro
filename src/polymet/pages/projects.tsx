@@ -43,16 +43,12 @@ import {
   PencilIcon,
   FileTextIcon,
 } from "lucide-react";
-import { PROJECTS, Project } from "@/polymet/data/site-audit-data"; // Import Project type
+import { Project } from "@/polymet/data/site-audit-data"; // Import Project type
 import ProjectForm, { ProjectFormData } from "@/polymet/components/project-form"; // Import ProjectFormData
+import { useProjectStore } from "@/store/project-store";
 
-interface ProjectsProps {
-  projects: Project[];
-  setProjects: React.Dispatch<React.SetStateAction<Project[]>>;
-}
-
-export default function Projects({ projects, setProjects }: ProjectsProps) {
-  // projects state is now managed by App.tsx and passed as props
+export default function Projects() {
+  const { projects, addProject, deleteProject } = useProjectStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [sortBy, setSortBy] = useState<"date" | "name" | "issues">("date");
@@ -72,12 +68,12 @@ export default function Projects({ projects, setProjects }: ProjectsProps) {
       issues: [],
     };
 
-    setProjects([newProject, ...projects]); // Use passed setProjects
+    addProject(newProject);
     setIsProjectFormOpen(false);
   };
 
   const handleDeleteProject = (projectId: string) => {
-    setProjects(projects.filter((p) => p.id !== projectId)); // Use passed setProjects
+    deleteProject(projectId);
   };
 
   const filteredProjects = projects.filter(

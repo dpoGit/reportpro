@@ -41,16 +41,10 @@ import {
 import IssueListItem from "@/polymet/components/issue-list-item";
 import IssueForm from "@/polymet/components/issue-form";
 import { Project, Issue } from "@/polymet/data/site-audit-data";
+import { useProjectStore } from "@/store/project-store";
 
-interface ProjectDetailsProps {
-  projects: Project[];
-  setProjects: React.Dispatch<React.SetStateAction<Project[]>>;
-}
-
-export default function ProjectDetails({
-  projects,
-  setProjects,
-}: ProjectDetailsProps) {
+export default function ProjectDetails() {
+  const { projects, updateProject, deleteProject } = useProjectStore();
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const [project, setProject] = useState<Project | undefined>(undefined);
@@ -107,15 +101,13 @@ export default function ProjectDetails({
       issueCount: updatedIssues.length,
     };
 
-    setProjects(
-      projects.map((p) => (p.id === updatedProject.id ? updatedProject : p))
-    );
+    updateProject(updatedProject);
     setProject(updatedProject); // Update local project state
     setIsIssueFormOpen(false);
   };
 
   const handleDeleteProject = () => {
-    setProjects(projects.filter((p) => p.id !== project.id));
+    deleteProject(project.id);
     navigate("/projects");
   };
 
