@@ -16,6 +16,7 @@ import Media from "@/polymet/pages/media";
 import Settings from "@/polymet/pages/settings";
 import Profile from "@/polymet/pages/profile";
 import Users from "@/polymet/pages/users";
+import Team from "@/polymet/pages/team";
 import HelpAndSupport from "@/polymet/pages/help-and-support"; // Import the HelpAndSupport component
 import React, { useState } from "react";
 import { PROJECTS, Project } from "@/polymet/data/site-audit-data";
@@ -123,6 +124,15 @@ export default function SiteAuditPrototype() {
           element={
             <SiteAuditLayout>
               <Users />
+            </SiteAuditLayout>
+          }
+        />
+
+        <Route
+          path="/team"
+          element={
+            <SiteAuditLayout>
+              <Team />
             </SiteAuditLayout>
           }
         />

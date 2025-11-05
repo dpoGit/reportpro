@@ -82,6 +82,12 @@ export default function SiteAuditLayout({ children }: SiteAuditLayoutProps) {
       isActive: location.pathname === "/users",
     },
     {
+      name: "Team",
+      href: "/team",
+      icon: UsersIcon,
+      isActive: location.pathname === "/team",
+    },
+    {
       name: "Help & Support", 
       href: "/help-and-support",
       icon: LifeBuoyIcon,
