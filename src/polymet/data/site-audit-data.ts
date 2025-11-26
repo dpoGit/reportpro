@@ -54,6 +54,7 @@ export interface Project {
   reference?: string;
   location?: string;
   issueCount?: number;
+  notes?: string;
 }
 
 export const PROJECTS: Project[] = [
