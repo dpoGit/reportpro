@@ -30,7 +30,7 @@ import {
   SparklesIcon,
 } from "lucide-react";
 // @ts-ignore
-import { SnagListInspector } from "snaglist-ai-inspector";
+// import { SnagListInspector } from "snaglist-ai-inspector";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -286,13 +286,13 @@ export default function ProjectDetails({
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-[95vw] w-full h-[95vh] p-0 overflow-y-auto bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800">
-                      <SnagListInspector
+                      {/* <SnagListInspector
                         apiKey={import.meta.env.VITE_GEMINI_API_KEY}
                         onIssueCreated={handleInspectorIssueCreated}
                         onCancel={() => setIsInspectorOpen(false)}
                         className="h-full w-full"
                         isDarkMode={theme === "dark"}
-                      />
+                      /> */}
                     </DialogContent>
                   </Dialog>
 
