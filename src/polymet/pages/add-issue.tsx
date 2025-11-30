@@ -8,8 +8,14 @@ import SupportingImages from '../components/AutoAudit/components/SupportingImage
 import { analyzeSnagImage } from '../components/AutoAudit/services/geminiService';
 import { IssueFormData, IssuePriority, IssueStatus, SnagItem, BOX_COLORS } from '../components/AutoAudit/types';
 import { CheckCircle2 } from 'lucide-react';
+import { addIssueToProject, Issue, Project } from '../data/site-audit-data';
 
-export default function AddIssuePage() {
+interface AddIssuePageProps {
+    projects: Project[];
+    setProjects: React.Dispatch<React.SetStateAction<Project[]>>;
+}
+
+export default function AddIssuePage({ projects, setProjects }: AddIssuePageProps) {
     const { projectId } = useParams<{ projectId: string }>();
     const navigate = useNavigate();
     // const { theme } = useTheme();
@@ -133,19 +139,60 @@ export default function AddIssuePage() {
         navigate(`/project/${projectId}`);
     };
 
+
+
     const handleCreateIssue = () => {
-        console.log('Issue Created:', {
-            ...formData,
-            image: selectedImage ? 'Image attached' : 'No image',
-            supportingImages: supportingImages.filter(img => img !== null).length,
-            report: analysisText,
-            detectedItems: snagItems
+        if (!projectId) return;
+
+        const newIssue: Issue = {
+            id: `issue-${Date.now()}`,
+            title: formData.location || 'New Issue',
+            description: formData.notes || analysisText || 'No description provided.',
+            status: formData.status === IssueStatus.CLOSED ? 'resolved' :
+                formData.status === IssueStatus.IN_PROGRESS ? 'in-progress' : 'open',
+            category: 'General',
+            assignee: { name: formData.assignee || 'Unassigned' },
+            createdAt: new Date().toISOString(),
+            images: [],
+            priority: (formData.priority === IssuePriority.CRITICAL ? 'high' : formData.priority.toLowerCase()) as "low" | "medium" | "high",
+        };
+
+        // Add main image
+        if (selectedImage) {
+            newIssue.images.push({
+                url: selectedImage,
+                caption: 'Main Image'
+            });
+        }
+
+        // Add supporting images
+        supportingImages.forEach((img, index) => {
+            if (img) {
+                newIssue.images.push({
+                    url: img,
+                    caption: `Supporting Image ${index + 1}`
+                });
+            }
         });
+
+        // Update global state
+        setProjects(prevProjects => prevProjects.map(p => {
+            if (p.id === projectId) {
+                return {
+                    ...p,
+                    issues: [newIssue, ...p.issues],
+                    issueCount: (p.issueCount || 0) + 1
+                };
+            }
+            return p;
+        }));
+
+        addIssueToProject(projectId, newIssue);
 
         setShowSuccessToast(true);
         setTimeout(() => {
             setShowSuccessToast(false);
-            handleCancel();
+            navigate(`/project/${projectId}`);
         }, 2000);
     };
 

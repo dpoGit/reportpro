@@ -308,3 +308,11 @@ export const DEFAULT_REPORT_SETTINGS = {
   photoQuality: 80,
   includeImagesInCSV: false,
 };
+
+export const addIssueToProject = (projectId: string, issue: Issue) => {
+  const project = PROJECTS.find(p => p.id === projectId);
+  if (project) {
+    project.issues.unshift(issue);
+    project.issueCount = (project.issueCount || 0) + 1;
+  }
+};
