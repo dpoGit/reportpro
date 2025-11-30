@@ -11,11 +11,10 @@ import { CheckCircle2 } from 'lucide-react';
 import { addIssueToProject, Issue, Project } from '../data/site-audit-data';
 
 interface AddIssuePageProps {
-    projects: Project[];
     setProjects: React.Dispatch<React.SetStateAction<Project[]>>;
 }
 
-export default function AddIssuePage({ projects, setProjects }: AddIssuePageProps) {
+export default function AddIssuePage({ setProjects }: AddIssuePageProps) {
     const { projectId } = useParams<{ projectId: string }>();
     const navigate = useNavigate();
     // const { theme } = useTheme();

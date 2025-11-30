@@ -60,7 +60,7 @@ export default function SiteAuditPrototype() {
           path="/project/:projectId/add-issue"
           element={
             <SiteAuditLayout>
-              <AddIssuePage projects={projects} setProjects={setProjects} />
+              <AddIssuePage setProjects={setProjects} />
             </SiteAuditLayout>
           }
         />
