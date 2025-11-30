@@ -82,7 +82,7 @@ export default function SiteAuditLayout({ children }: SiteAuditLayoutProps) {
       isActive: location.pathname === "/users",
     },
     {
-      name: "Help & Support", 
+      name: "Help & Support",
       href: "/help-and-support",
       icon: LifeBuoyIcon,
       isActive: location.pathname === "/help-and-support",
@@ -92,7 +92,7 @@ export default function SiteAuditLayout({ children }: SiteAuditLayoutProps) {
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
       {/* Sidebar */}
-      <div className="hidden md:block bg-sidebar text-sidebar-foreground border-r border-sidebar-border rounded-r-xl overflow-hidden shadow-lg">
+      <div className="hidden md:block bg-sidebar text-sidebar-foreground border-r border-sidebar-border rounded-r-xl overflow-hidden shadow-lg sticky top-0 h-screen">
         <div className="flex h-full max-h-screen flex-col gap-2">
           <div className="flex h-14 items-center border-b border-sidebar-border px-4 lg:h-[60px] lg:px-6">
             <Link to="/" className="flex items-center gap-2 font-semibold text-white">
@@ -110,11 +110,10 @@ export default function SiteAuditLayout({ children }: SiteAuditLayoutProps) {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`flex items-center gap-3 rounded-r-lg px-3 py-2 transition-all ${
-                    item.isActive
+                  className={`flex items-center gap-3 rounded-r-lg px-3 py-2 transition-all ${item.isActive
                       ? "bg-sidebar-active text-primary border-l-4 border-primary"
                       : "text-sidebar-foreground hover:text-primary"
-                  }`}
+                    }`}
                 >
                   <item.icon className="h-4 w-4" />
                   {item.name}
@@ -128,11 +127,10 @@ export default function SiteAuditLayout({ children }: SiteAuditLayoutProps) {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`flex items-center gap-3 rounded-r-lg px-3 py-2 transition-all ${
-                    item.isActive
+                  className={`flex items-center gap-3 rounded-r-lg px-3 py-2 transition-all ${item.isActive
                       ? "bg-sidebar-active text-primary border-l-4 border-primary"
                       : "text-sidebar-foreground hover:text-primary"
-                  }`}
+                    }`}
                 >
                   <item.icon className="h-4 w-4" />
                   {item.name}
@@ -169,11 +167,10 @@ export default function SiteAuditLayout({ children }: SiteAuditLayoutProps) {
                   <Link
                     key={item.name}
                     to={item.href}
-                    className={`mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 ${
-                      item.isActive
+                    className={`mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 ${item.isActive
                         ? "bg-sidebar-active text-primary border-l-4 border-primary"
                         : "text-sidebar-foreground hover:text-primary"
-                    }`}
+                      }`}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     <item.icon className="h-5 w-5" />
@@ -185,11 +182,10 @@ export default function SiteAuditLayout({ children }: SiteAuditLayoutProps) {
                     <Link
                       key={item.name}
                       to={item.href}
-                      className={`mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 ${
-                        item.isActive
+                      className={`mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 ${item.isActive
                           ? "bg-sidebar-active text-primary border-l-4 border-primary"
                           : "text-sidebar-foreground hover:text-primary"
-                      }`}
+                        }`}
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       <item.icon className="h-5 w-5" />
