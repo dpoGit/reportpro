@@ -28,7 +28,6 @@ import {
   ArrowLeftIcon,
   CalendarIcon,
   MapPinIcon,
-  MessageSquareIcon,
   PencilIcon,
   TrashIcon,
 } from "lucide-react";
@@ -79,13 +78,13 @@ export default function IssueDetails({ projects, setProjects }: IssueDetailsProp
     const updatedIssue: Issue = {
       ...issue,
       title: updatedData.title,
+      description: updatedData.comments, // Mapped from form's 'comments' field
       assignee: {
         name: updatedData.assignee,
         avatar: issue?.assignee.avatar || "https://github.com/yusufhilmi.png",
       },
       status: updatedData.status,
       priority: updatedData.priority,
-      comments: updatedData.comments,
       images: updatedData.images.map((url: string) => ({
         url,
         timestamp: new Date().toISOString(),
@@ -232,7 +231,7 @@ export default function IssueDetails({ projects, setProjects }: IssueDetailsProp
                         <IssueForm
                           onSubmit={handleUpdateIssue}
                           onCancel={() => setIsIssueFormOpen(false)}
-                          initialData={issue}
+                          initialData={{ ...issue, comments: issue.description }}
                         />
                       </DialogContent>
                     </Dialog>
@@ -263,14 +262,36 @@ export default function IssueDetails({ projects, setProjects }: IssueDetailsProp
                 </div>
               </div>
 
-              {issue.comments && (
-                <div>
-                  <p className="text-sm text-muted-foreground">Comments</p>
-                  <p>{issue.comments}</p>
+              <div>
+                <p className="text-sm text-muted-foreground">Description</p>
+                <p>{issue.description}</p>
+              </div>
+
+              {issue.comments && issue.comments.length > 0 && (
+                <div className="pt-4">
+                  <p className="text-sm font-medium text-muted-foreground mb-2">Comments Log</p>
+                  <div className="space-y-3">
+                    {issue.comments.map((comment) => (
+                      <div key={comment.id} className="flex items-start space-x-3">
+                        <Avatar className="h-8 w-8">
+                          <AvatarFallback>{comment.author.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <div className="flex justify-between items-center">
+                            <p className="text-sm font-semibold">{comment.author}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(comment.timestamp).toLocaleString()}
+                            </p>
+                          </div>
+                          <p className="text-sm mt-1">{comment.text}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 
-              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+              <div className="flex items-center space-x-2 text-sm text-muted-foreground pt-4 border-t mt-4">
                 <CalendarIcon className="h-4 w-4" />
                 <span>Created: {new Date(issue.createdAt).toLocaleString()}</span>
               </div>

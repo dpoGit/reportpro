@@ -96,7 +96,7 @@ export default function SiteAuditPrototype() {
           path="/issues"
           element={
             <SiteAuditLayout>
-              <Issues />
+              <Issues projects={projects} setProjects={setProjects} />
             </SiteAuditLayout>
           }
         />
