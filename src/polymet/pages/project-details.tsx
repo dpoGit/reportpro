@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { useTheme } from "next-themes";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -50,7 +50,7 @@ export default function ProjectDetails({
 }: ProjectDetailsProps) {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
-  const { theme } = useTheme();
+
   const [project, setProject] = useState<Project | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<
