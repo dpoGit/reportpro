@@ -17,7 +17,8 @@ import Settings from "@/polymet/pages/settings";
 import Profile from "@/polymet/pages/profile";
 import Users from "@/polymet/pages/users";
 import HelpAndSupport from "@/polymet/pages/help-and-support"; // Import the HelpAndSupport component
-import React, { useState } from "react";
+import AddIssuePage from "@/polymet/pages/add-issue";
+import { useState } from "react";
 import { PROJECTS, Project } from "@/polymet/data/site-audit-data";
 
 export default function SiteAuditPrototype() {
@@ -51,6 +52,15 @@ export default function SiteAuditPrototype() {
           element={
             <SiteAuditLayout>
               <ProjectDetails projects={projects} setProjects={setProjects} />
+            </SiteAuditLayout>
+          }
+        />
+
+        <Route
+          path="/project/:projectId/add-issue"
+          element={
+            <SiteAuditLayout>
+              <AddIssuePage />
             </SiteAuditLayout>
           }
         />

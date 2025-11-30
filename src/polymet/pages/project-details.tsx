@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { useTheme } from "next-themes";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -15,11 +15,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+
 import {
   ArrowLeftIcon,
 
@@ -30,7 +26,7 @@ import {
   SparklesIcon,
 } from "lucide-react";
 // @ts-ignore
-import { SnagListInspector } from "snaglist-ai-inspector";
+// import { SnagListInspector } from "snaglist-ai-inspector";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -54,7 +50,7 @@ export default function ProjectDetails({
 }: ProjectDetailsProps) {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
-  const { theme } = useTheme();
+
   const [project, setProject] = useState<Project | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<
@@ -64,7 +60,7 @@ export default function ProjectDetails({
     "all" | "low" | "medium" | "high"
   >("all");
 
-  const [isInspectorOpen, setIsInspectorOpen] = useState(false);
+
 
   useEffect(() => {
     const foundProject = projects.find((p) => p.id === projectId);
@@ -87,46 +83,7 @@ export default function ProjectDetails({
 
 
 
-  const handleInspectorIssueCreated = (data: any) => {
-    if (!project) return;
 
-    const newIssue: Issue = {
-      id: `issue-${Date.now()}`,
-      title: data.formData.notes ? data.formData.notes.slice(0, 50) + (data.formData.notes.length > 50 ? "..." : "") : "AI Detected Issue",
-      description: data.report || "No analysis generated.",
-      category: "Visual Inspection",
-      assignee: {
-        name: data.formData.assignee || "Unassigned",
-        avatar: "https://github.com/shadcn.png",
-      },
-      status: data.formData.status || "open",
-      priority: data.formData.priority || "medium",
-      comments: [],
-      images: data.image
-        ? [
-          {
-            url: data.image,
-            timestamp: new Date().toISOString(),
-            caption: "Captured via AI Inspector",
-          },
-        ]
-        : [],
-      createdAt: new Date().toISOString(),
-    };
-
-    const updatedIssues = [...project.issues, newIssue];
-    const updatedProject = {
-      ...project,
-      issues: updatedIssues,
-      issueCount: updatedIssues.length,
-    };
-
-    setProjects(
-      projects.map((p) => (p.id === updatedProject.id ? updatedProject : p))
-    );
-    setProject(updatedProject);
-    setIsInspectorOpen(false);
-  };
 
   const handleDeleteProject = () => {
     setProjects(projects.filter((p) => p.id !== project.id));
@@ -278,25 +235,10 @@ export default function ProjectDetails({
                   </CardDescription>
                 </div>
                 <div className="flex gap-2">
-                  <Dialog open={isInspectorOpen} onOpenChange={setIsInspectorOpen}>
-                    <DialogTrigger asChild>
-                      <Button size="sm">
-                        <SparklesIcon className="mr-2 h-4 w-4" />
-                        Add Issue
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-[95vw] w-full h-[95vh] p-0 overflow-y-auto bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800">
-                      <SnagListInspector
-                        apiKey={import.meta.env.VITE_GEMINI_API_KEY}
-                        onIssueCreated={handleInspectorIssueCreated}
-                        onCancel={() => setIsInspectorOpen(false)}
-                        className="h-full w-full"
-                        isDarkMode={theme === "dark"}
-                      />
-                    </DialogContent>
-                  </Dialog>
-
-
+                  <Button size="sm" onClick={() => navigate(`/project/${project.id}/add-issue`)}>
+                    <SparklesIcon className="mr-2 h-4 w-4" />
+                    + Add Issue/Snag
+                  </Button>
                 </div>
               </div>
             </CardHeader>
