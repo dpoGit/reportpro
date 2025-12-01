@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   BellIcon,
   HomeIcon,
@@ -13,6 +13,7 @@ import {
   ImageIcon,
   LifeBuoyIcon,
   CheckSquareIcon, // Added CheckSquareIcon
+  ArrowLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -33,6 +34,7 @@ interface SiteAuditLayoutProps {
 
 export default function SiteAuditLayout({ children }: SiteAuditLayoutProps) {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navItems = [
@@ -111,8 +113,8 @@ export default function SiteAuditLayout({ children }: SiteAuditLayoutProps) {
                   key={item.name}
                   to={item.href}
                   className={`flex items-center gap-3 rounded-r-lg px-3 py-2 transition-all ${item.isActive
-                      ? "bg-sidebar-active text-primary border-l-4 border-primary"
-                      : "text-sidebar-foreground hover:text-primary"
+                    ? "bg-sidebar-active text-primary border-l-4 border-primary"
+                    : "text-sidebar-foreground hover:text-primary"
                     }`}
                 >
                   <item.icon className="h-4 w-4" />
@@ -128,8 +130,8 @@ export default function SiteAuditLayout({ children }: SiteAuditLayoutProps) {
                   key={item.name}
                   to={item.href}
                   className={`flex items-center gap-3 rounded-r-lg px-3 py-2 transition-all ${item.isActive
-                      ? "bg-sidebar-active text-primary border-l-4 border-primary"
-                      : "text-sidebar-foreground hover:text-primary"
+                    ? "bg-sidebar-active text-primary border-l-4 border-primary"
+                    : "text-sidebar-foreground hover:text-primary"
                     }`}
                 >
                   <item.icon className="h-4 w-4" />
@@ -142,7 +144,16 @@ export default function SiteAuditLayout({ children }: SiteAuditLayoutProps) {
       </div>
       {/* Main Content Area */}
       <div className="flex flex-col">
-        <header className="flex h-14 items-center gap-4 border-b border-border bg-card px-4 lg:h-[60px] lg:px-6 shadow-sm">
+        <header className="flex h-auto py-2 items-center gap-4 border-b border-border bg-card px-4 lg:px-6 shadow-sm relative">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="hidden md:flex"
+            onClick={() => navigate(-1)}
+          >
+            <ArrowLeft className="h-5 w-5" />
+            <span className="sr-only">Go back</span>
+          </Button>
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetTrigger asChild>
               <Button
@@ -168,8 +179,8 @@ export default function SiteAuditLayout({ children }: SiteAuditLayoutProps) {
                     key={item.name}
                     to={item.href}
                     className={`mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 ${item.isActive
-                        ? "bg-sidebar-active text-primary border-l-4 border-primary"
-                        : "text-sidebar-foreground hover:text-primary"
+                      ? "bg-sidebar-active text-primary border-l-4 border-primary"
+                      : "text-sidebar-foreground hover:text-primary"
                       }`}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
@@ -183,8 +194,8 @@ export default function SiteAuditLayout({ children }: SiteAuditLayoutProps) {
                       key={item.name}
                       to={item.href}
                       className={`mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 ${item.isActive
-                          ? "bg-sidebar-active text-primary border-l-4 border-primary"
-                          : "text-sidebar-foreground hover:text-primary"
+                        ? "bg-sidebar-active text-primary border-l-4 border-primary"
+                        : "text-sidebar-foreground hover:text-primary"
                         }`}
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
@@ -196,8 +207,45 @@ export default function SiteAuditLayout({ children }: SiteAuditLayoutProps) {
               </nav>
             </SheetContent>
           </Sheet>
-          <div className="w-full flex-1">
-            {/* Search or other header content can go here */}
+          <div className="w-full flex-1 flex justify-center">
+            {(() => {
+              const getPageInfo = (path: string) => {
+                if (path === "/dashboard") return { title: "ReportPro", description: "Manage your projects and issues efficiently" };
+                if (path.startsWith("/projects")) return { title: "Projects", description: "View and manage all your projects" };
+                if (path.startsWith("/project/") && path.endsWith("/add-issue")) return { title: "Add Issue", description: "Create a new issue for this project" };
+                if (path.startsWith("/project/")) return { title: "Project Details", description: "View project information and issues" };
+                if (path.startsWith("/issue/")) return { title: "Issue Details", description: "View and edit issue details" };
+                if (path === "/reports") return { title: "Reports", description: "Generate and view reports" };
+                if (path.startsWith("/report/")) return { title: "Report Details", description: "View report details" };
+                if (path === "/issues") return { title: "Issues", description: "View all issues across projects" };
+                if (path === "/media") return { title: "Media", description: "Manage project media" };
+                if (path === "/settings") return { title: "Settings", description: "Manage application settings" };
+                if (path === "/profile") return { title: "Profile", description: "Manage your profile" };
+                if (path === "/users") return { title: "Users", description: "Manage users" };
+                if (path === "/help-and-support") return { title: "Help & Support", description: "Get help and support" };
+                return { title: "", description: "" };
+              };
+
+              const { title, description } = getPageInfo(location.pathname);
+
+              return (
+                <div className="flex items-center justify-center gap-4">
+                  <h1 className="text-3xl font-bold flex items-center gap-2">
+                    {title === "ReportPro" && <CheckSquareIcon className="h-7 w-7 text-primary" />}
+                    {title === "ReportPro" ? (
+                      <span>Report<span className="text-orange-500">Pro</span></span>
+                    ) : (
+                      title
+                    )}
+                  </h1>
+                  {description && (
+                    <p className="text-muted-foreground">
+                      {description}
+                    </p>
+                  )}
+                </div>
+              );
+            })()}
           </div>
           <ThemeToggle />
           <DropdownMenu>
