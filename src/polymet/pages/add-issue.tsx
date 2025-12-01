@@ -7,14 +7,15 @@ import IssueForm from '../components/AutoAudit/components/IssueForm';
 import SupportingImages from '../components/AutoAudit/components/SupportingImages';
 import { analyzeSnagImage } from '../components/AutoAudit/services/geminiService';
 import { IssueFormData, IssuePriority, IssueStatus, SnagItem, BOX_COLORS } from '../components/AutoAudit/types';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, ScanSearch, Loader2 } from 'lucide-react';
 import { addIssueToProject, Issue, Project } from '../data/site-audit-data';
 
 interface AddIssuePageProps {
+    projects: Project[];
     setProjects: React.Dispatch<React.SetStateAction<Project[]>>;
 }
 
-export default function AddIssuePage({ setProjects }: AddIssuePageProps) {
+export default function AddIssuePage({ projects, setProjects }: AddIssuePageProps) {
     const { projectId } = useParams<{ projectId: string }>();
     const navigate = useNavigate();
     // const { theme } = useTheme();
@@ -210,6 +211,35 @@ export default function AddIssuePage({ setProjects }: AddIssuePageProps) {
                         selectedImage={selectedImage}
                         snagItems={snagItems}
                     />
+
+                    {/* Scan Button Overlay */}
+                    {selectedImage && (
+                        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-30">
+                            <button
+                                onClick={handleScan}
+                                disabled={isAnalyzing}
+                                className={`
+                                    group relative overflow-hidden flex items-center gap-3 px-8 py-3.5 rounded-full font-bold text-white shadow-xl transition-all duration-300 border-2
+                                    ${isAnalyzing
+                                        ? 'bg-amber-400 cursor-wait border-[#F59D0C]'
+                                        : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:scale-105 hover:shadow-amber-500/30 active:scale-95 border-transparent active:border-[#F59D0C]'
+                                    }
+                                `}
+                            >
+                                {isAnalyzing ? (
+                                    <Loader2 className="animate-spin" size={20} />
+                                ) : (
+                                    <ScanSearch size={20} />
+                                )}
+                                <span className="relative z-10">{isAnalyzing ? 'Analyzing...' : 'Scan for Issues'}</span>
+
+                                {/* Shine Effect */}
+                                {!isAnalyzing && (
+                                    <div className="absolute top-0 -left-[100%] w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent transform skew-x-12 group-hover:animate-shine" />
+                                )}
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Supporting Images - Fixed at bottom of left panel */}
@@ -223,6 +253,12 @@ export default function AddIssuePage({ setProjects }: AddIssuePageProps) {
 
             {/* RIGHT PANEL: Sidebar (Report & Form) */}
             <div className="flex-1 w-full md:w-[420px] lg:w-[480px] md:h-full bg-white dark:bg-[#0B1120] shadow-2xl z-20 flex flex-col relative">
+                {/* Project Name Header */}
+                <div className="p-4 border-b border-neutral-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0B1120]/50">
+                    <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                        Project: <span className="text-foreground font-semibold">{projects.find(p => p.id === projectId)?.title || 'Unknown Project'}</span>
+                    </h2>
+                </div>
                 <div className="flex-1 md:overflow-y-auto custom-scrollbar">
                     <AnalysisReport
                         reportText={analysisText}

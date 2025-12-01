@@ -16,7 +16,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -166,6 +166,10 @@ export default function SiteAuditLayout({ children }: SiteAuditLayoutProps) {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="flex flex-col bg-sidebar text-sidebar-foreground">
+              <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+              <SheetDescription className="sr-only">
+                Mobile navigation menu for accessing different sections of the application.
+              </SheetDescription>
               <nav className="grid gap-2 text-lg font-medium">
                 <Link
                   to="#"
