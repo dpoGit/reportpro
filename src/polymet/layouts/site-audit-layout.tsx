@@ -230,7 +230,7 @@ export default function SiteAuditLayout({ children }: SiteAuditLayoutProps) {
 
               return (
                 <div className="flex items-center justify-center gap-4">
-                  <h1 className="text-3xl font-bold flex items-center gap-2">
+                  <h1 className="text-3xl font-bold flex items-center gap-2 text-muted-foreground">
                     {title === "ReportPro" && <CheckSquareIcon className="h-7 w-7 text-primary" />}
                     {title === "ReportPro" ? (
                       <span>Report<span className="text-orange-500">Pro</span></span>
@@ -239,7 +239,7 @@ export default function SiteAuditLayout({ children }: SiteAuditLayoutProps) {
                     )}
                   </h1>
                   {description && (
-                    <p className="text-muted-foreground">
+                    <p className="text-muted-foreground italic">
                       {description}
                     </p>
                   )}
