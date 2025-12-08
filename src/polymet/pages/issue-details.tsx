@@ -1,37 +1,7 @@
 import { useState, useEffect } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  ArrowLeftIcon,
-  CalendarIcon,
-  MapPinIcon,
-  PencilIcon,
-  TrashIcon,
-} from "lucide-react";
-import IssueForm from "@/polymet/components/issue-form";
+import { ArrowLeftIcon, Trash2 } from "lucide-react";
 import { Project, Issue } from "@/polymet/data/site-audit-data";
 
 interface IssueDetailsProps {
@@ -39,74 +9,52 @@ interface IssueDetailsProps {
   setProjects: React.Dispatch<React.SetStateAction<Project[]>>;
 }
 
+// Color palette for issue types (matching AnalysisReport)
+const issueColors = [
+  '#E91E63', // Pink
+  '#00BCD4', // Cyan
+  '#9C27B0', // Purple
+  '#009688', // Teal
+  '#FF9800', // Orange
+  '#4CAF50', // Green
+  '#2196F3', // Blue
+  '#F44336', // Red
+];
+
 export default function IssueDetails({ projects, setProjects }: IssueDetailsProps) {
-  const { projectId, issueId } = useParams<{ projectId: string; issueId: string }>();
+  const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const [project, setProject] = useState<Project | undefined>(undefined);
-  const [issue, setIssue] = useState<Issue | undefined>(undefined);
-  const [isIssueFormOpen, setIsIssueFormOpen] = useState(false);
+  const [selectedIssue, setSelectedIssue] = useState<Issue | undefined>(undefined);
 
   useEffect(() => {
     const foundProject = projects.find((p) => p.id === projectId);
     setProject(foundProject);
-    if (foundProject) {
-      const foundIssue = foundProject.issues.find((i) => i.id === issueId);
-      setIssue(foundIssue);
+    if (foundProject && foundProject.issues.length > 0) {
+      setSelectedIssue(foundProject.issues[0]);
     }
-  }, [projectId, issueId, projects]);
+  }, [projectId, projects]);
 
-  // Scroll to top when the component mounts or issueId changes
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, [issueId]);
+  }, [projectId]);
 
-  if (!project || !issue) {
+  if (!project) {
     return (
       <div className="container mx-auto p-4 md:p-6 text-center">
-        <h1 className="text-2xl font-bold">Issue Not Found</h1>
+        <h1 className="text-2xl font-bold">Project Not Found</h1>
         <p className="text-muted-foreground">
-          The issue you are looking for does not exist.
+          The project you are looking for does not exist.
         </p>
-        <Button onClick={() => navigate(`/project/${projectId}`)} className="mt-4">
-          Go back to Project
+        <Button onClick={() => navigate('/projects')} className="mt-4">
+          Go back to Projects
         </Button>
       </div>
     );
   }
 
-  const handleUpdateIssue = (updatedData: any) => {
-    const updatedIssue: Issue = {
-      ...issue,
-      title: updatedData.title,
-      description: updatedData.comments, // Mapped from form's 'comments' field
-      assignee: {
-        name: updatedData.assignee,
-        avatar: issue?.assignee.avatar || "https://github.com/yusufhilmi.png",
-      },
-      status: updatedData.status,
-      priority: updatedData.priority,
-      images: updatedData.images.map((url: string) => ({
-        url,
-        timestamp: new Date().toISOString(),
-      })),
-      updatedAt: new Date().toISOString(),
-    };
-
-    const updatedIssues = project.issues.map((i) =>
-      i.id === updatedIssue.id ? updatedIssue : i
-    );
-    const updatedProject = { ...project, issues: updatedIssues };
-
-    setProjects(
-      projects.map((p) => (p.id === updatedProject.id ? updatedProject : p))
-    );
-    setProject(updatedProject);
-    setIssue(updatedIssue);
-    setIsIssueFormOpen(false);
-  };
-
-  const handleDeleteIssue = () => {
-    const updatedIssues = project.issues.filter((i) => i.id !== issue.id);
+  const handleDeleteIssue = (issueId: string) => {
+    const updatedIssues = project.issues.filter((i) => i.id !== issueId);
     const updatedProject = {
       ...project,
       issues: updatedIssues,
@@ -115,255 +63,210 @@ export default function IssueDetails({ projects, setProjects }: IssueDetailsProp
     setProjects(
       projects.map((p) => (p.id === updatedProject.id ? updatedProject : p))
     );
-    navigate(`/project/${projectId}`);
-  };
+    setProject(updatedProject);
 
-  const getStatusBadgeVariant = (status: Issue["status"]) => {
-    switch (status) {
-      case "open":
-        return "destructive";
-      case "in-progress":
-        return "default";
-      case "resolved":
-        return "success";
-      default:
-        return "secondary";
+    // If we deleted the selected issue, select the first remaining one
+    if (selectedIssue?.id === issueId && updatedIssues.length > 0) {
+      setSelectedIssue(updatedIssues[0]);
+    } else if (updatedIssues.length === 0) {
+      setSelectedIssue(undefined);
     }
   };
 
-  const getPriorityBadgeVariant = (priority: Issue["priority"]) => {
-    switch (priority) {
-      case "high":
-        return "destructive";
-      case "medium":
-        return "default";
-      case "low":
-        return "secondary";
-      default:
-        return "secondary";
-    }
+  const getIssueColor = (index: number) => {
+    return issueColors[index % issueColors.length];
   };
 
   return (
-    <div className="container mx-auto p-4 md:p-6">
-      <div className="flex items-center gap-4 mb-6">
-        <Button variant="ghost" size="icon" onClick={() => navigate(`/project/${projectId}`)}>
-          <ArrowLeftIcon className="h-5 w-5" />
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold">{issue.title}</h1>
-          <p className="text-muted-foreground">
-            Part of project:{" "}
-            <Link to={`/project/${project.id}`} className="hover:underline">
-              {project.title}
-            </Link>
-          </p>
+    <div className="min-h-screen bg-slate-50">
+      {/* Header */}
+      <div className="bg-white border-b border-slate-200 px-4 py-3">
+        <div className="container mx-auto flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/projects')}
+            className="hover:bg-slate-100"
+          >
+            <ArrowLeftIcon className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-lg font-semibold text-slate-900">Issue Review</h1>
+            <p className="text-sm text-slate-500">{project.title}</p>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Images</CardTitle>
-              <CardDescription>Visual documentation for this issue.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {issue.images && issue.images.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                  {issue.images.map((image, index) => (
-                    <div key={index} className="relative group">
-                      <img
-                        src={image.url}
-                        alt={`Issue image ${index + 1}`}
-                        className="rounded-md object-cover w-full h-48"
-                      />
-                      {image.timestamp && (
-                        <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
-                          {new Date(image.timestamp).toLocaleString()}
+      {/* Main Content */}
+      <div className="container mx-auto p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Left Column: Image Display */}
+          <div className="space-y-4">
+            {selectedIssue && selectedIssue.images && selectedIssue.images.length > 0 ? (
+              <>
+                {/* Primary Image */}
+                <div className="relative bg-black rounded-2xl overflow-hidden">
+                  <img
+                    src={selectedIssue.images[0].url}
+                    alt="Primary issue"
+                    className="w-full h-auto object-contain"
+                  />
+
+                  {/* Bounding Boxes */}
+                  {selectedIssue.images[0].boundingBoxes?.map((box, index) => {
+                    const [ymin, xmin, ymax, xmax] = box.box_2d;
+                    const isRightSide = xmin > 500;
+
+                    return (
+                      <div
+                        key={index}
+                        className="absolute border-2 transition-all duration-300 hover:z-30 group/box cursor-help"
+                        style={{
+                          top: `${(ymin / 1000) * 100}%`,
+                          left: `${(xmin / 1000) * 100}%`,
+                          height: `${((ymax - ymin) / 1000) * 100}%`,
+                          width: `${((xmax - xmin) / 1000) * 100}%`,
+                          borderColor: box.color || '#FACC15',
+                          boxShadow: `0 0 8px ${box.color || '#FACC15'}, inset 0 0 8px ${box.color || '#FACC15'}33`
+                        }}
+                      >
+                        {/* Label - Always Visible */}
+                        <div
+                          className={`absolute -top-7 ${isRightSide ? 'right-0' : 'left-0'} px-3 py-1 text-xs font-bold text-black rounded-md whitespace-nowrap shadow-lg pointer-events-none transition-all duration-200 group-hover/box:scale-105`}
+                          style={{ backgroundColor: box.color || '#FACC15' }}
+                        >
+                          {box.label}
                         </div>
-                      )}
-                      {image.location && image.location.address && (
-                        <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded flex items-center">
-                          <MapPinIcon className="h-3 w-3 mr-1" />
-                          {image.location.address}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  No images available for this issue.
-                </div>
-              )}
-            </CardContent>
-          </Card>
 
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                <div>
-                  <CardTitle>{issue.title}</CardTitle>
-                  <CardDescription>Issue Details</CardDescription>
-                </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      Actions
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <Dialog open={isIssueFormOpen} onOpenChange={setIsIssueFormOpen}>
-                      <DialogTrigger asChild>
-                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                          <PencilIcon className="mr-2 h-4 w-4" />
-                          Edit Issue
-                        </DropdownMenuItem>
-                      </DialogTrigger>
-                      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-                        <DialogHeader>
-                          <DialogTitle>Edit Issue</DialogTitle>
-                          <DialogDescription>
-                            Update details for this issue
-                          </DialogDescription>
-                        </DialogHeader>
-                        <IssueForm
-                          onSubmit={handleUpdateIssue}
-                          onCancel={() => setIsIssueFormOpen(false)}
-                          initialData={{ ...issue, comments: issue.description }}
-                        />
-                      </DialogContent>
-                    </Dialog>
-                    <DropdownMenuItem
-                      className="text-red-600"
-                      onClick={handleDeleteIssue}
-                    >
-                      <TrashIcon className="mr-2 h-4 w-4" />
-                      Delete Issue
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Status</p>
-                  <Badge variant={getStatusBadgeVariant(issue.status)}>
-                    {issue.status}
-                  </Badge>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Priority</p>
-                  <Badge variant={getPriorityBadgeVariant(issue.priority)}>
-                    {issue.priority}
-                  </Badge>
-                </div>
-              </div>
-
-              <div>
-                <p className="text-sm text-muted-foreground">Description</p>
-                <p>{issue.description}</p>
-              </div>
-
-              {issue.comments && issue.comments.length > 0 && (
-                <div className="pt-4">
-                  <p className="text-sm font-medium text-muted-foreground mb-2">Comments Log</p>
-                  <div className="space-y-3">
-                    {issue.comments.map((comment) => (
-                      <div key={comment.id} className="flex items-start space-x-3">
-                        <Avatar className="h-8 w-8">
-                          <AvatarFallback>{comment.author.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <div className="flex justify-between items-center">
-                            <p className="text-sm font-semibold">{comment.author}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {new Date(comment.timestamp).toLocaleString()}
-                            </p>
+                        {/* Description Tooltip - Visible on hover */}
+                        <div
+                          className={`absolute top-full ${isRightSide ? 'right-0' : 'left-0'} mt-2 w-56 bg-slate-900/95 dark:bg-black/95 text-white text-xs p-3 rounded-xl shadow-2xl border border-white/10 opacity-0 group-hover/box:opacity-100 transition-all duration-200 transform translate-y-2 group-hover/box:translate-y-0 pointer-events-none z-50 backdrop-blur-md`}
+                        >
+                          <div className="font-bold mb-1.5 border-b border-white/10 pb-1.5 flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: box.color }}></div>
+                            <span style={{ color: box.color }}>{box.label}</span>
                           </div>
-                          <p className="text-sm mt-1">{comment.text}</p>
+                          <div className="leading-relaxed text-slate-300">{box.description}</div>
                         </div>
                       </div>
-                    ))}
+                    );
+                  })}
+
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="absolute top-4 right-4 bg-white hover:bg-slate-100 text-slate-900"
+                  >
+                    🔄 Retake
+                  </Button>
+                </div>
+
+                {/* Supporting Images */}
+                {selectedIssue.images.length > 1 && (
+                  <div>
+                    <h3 className="text-sm text-slate-500 mb-3 font-medium">
+                      Supporting Images <span className="text-slate-400">(Optional)</span>
+                    </h3>
+                    <div className="grid grid-cols-4 gap-3">
+                      {selectedIssue.images.slice(1).map((image, index) => (
+                        <div
+                          key={index}
+                          className="aspect-square rounded-lg overflow-hidden bg-slate-200 border border-slate-300"
+                        >
+                          <img
+                            src={image.url}
+                            alt={`Supporting ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
-
-              <div className="flex items-center space-x-2 text-sm text-muted-foreground pt-4 border-t mt-4">
-                <CalendarIcon className="h-4 w-4" />
-                <span>Created: {new Date(issue.createdAt).toLocaleString()}</span>
+                )}
+              </>
+            ) : (
+              <div className="bg-slate-200 rounded-2xl h-96 flex items-center justify-center text-slate-400">
+                No images available
               </div>
-              {issue.updatedAt && (
-                <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                  <CalendarIcon className="h-4 w-4" />
-                  <span>Last Updated: {new Date(issue.updatedAt).toLocaleString()}</span>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+            )}
+          </div>
 
-        <div className="lg:col-span-1 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Assigned To</CardTitle>
-              <CardDescription>Person responsible for this issue.</CardDescription>
-            </CardHeader>
-            <CardContent className="flex items-center space-x-4">
-              <Avatar className="h-16 w-16">
-                <AvatarImage src={issue.assignee.avatar} alt={issue.assignee.name} />
-                <AvatarFallback>{issue.assignee.name.charAt(0)}</AvatarFallback>
-              </Avatar>
-              <div>
-                <p className="font-medium">{issue.assignee.name}</p>
-                <p className="text-sm text-muted-foreground">Assignee</p>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Right Column: Issues List */}
+          <div className="space-y-4">
+            {/* Project Header */}
+            <div className="mb-2">
+              <p className="text-xs text-slate-400 uppercase tracking-widest font-bold">
+                PROJECT: {project.title.toUpperCase()}
+              </p>
+            </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Activity Log</CardTitle>
-              <CardDescription>Recent activities on this issue.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-start space-x-3">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={issue.assignee.avatar} />
-                  <AvatarFallback>JD</AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <p className="text-sm">
-                    <span className="font-medium">{issue.assignee.name}</span>{" "}
-                    created this issue.
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {new Date(issue.createdAt).toLocaleString()}
-                  </p>
-                </div>
+            {/* Issues Section */}
+            <div className="space-y-4">
+              {/* Section Header */}
+              <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+                <h4 className="text-xs text-slate-400 uppercase tracking-widest font-bold">
+                  Detected Issues
+                </h4>
+                <span className="bg-slate-200 text-slate-600 text-[10px] px-2 py-0.5 rounded-full font-bold">
+                  {project.issues.length} Found
+                </span>
               </div>
-              {issue.updatedAt && (
-                <div className="flex items-start space-x-3">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={issue.assignee.avatar} />
-                    <AvatarFallback>JD</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <p className="text-sm">
-                      <span className="font-medium">{issue.assignee.name}</span>{" "}
-                      updated this issue.
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(issue.updatedAt).toLocaleString()}
-                    </p>
+
+              {/* Issues List */}
+              <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+                {project.issues.length > 0 ? (
+                  project.issues.map((issue, idx) => {
+                    const color = getIssueColor(idx);
+                    return (
+                      <div
+                        key={issue.id}
+                        onClick={() => setSelectedIssue(issue)}
+                        className={`bg-white rounded-xl p-4 flex gap-4 border transition-all cursor-pointer group ${selectedIssue?.id === issue.id
+                          ? 'border-slate-300 shadow-md'
+                          : 'border-slate-200 hover:border-slate-300 hover:shadow-sm'
+                          }`}
+                      >
+                        <div
+                          className="w-3 h-3 rounded-full mt-1.5 flex-shrink-0 ring-2 ring-offset-2 ring-offset-white"
+                          style={{
+                            backgroundColor: color,
+                            '--tw-ring-color': color
+                          } as React.CSSProperties}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between mb-1 gap-2">
+                            <span
+                              className="text-sm font-bold"
+                              style={{ color }}
+                            >
+                              {issue.title}
+                            </span>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteIssue(issue.id);
+                              }}
+                              className="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-rose-500 transition-all p-1 flex-shrink-0"
+                              title="Delete Issue"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                          <p className="text-slate-500 text-xs leading-relaxed">
+                            {issue.description}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="text-center py-8 text-slate-400">
+                    No issues detected for this project
                   </div>
-                </div>
-              )}
-              {/* Add more activity log entries as needed */}
-            </CardContent>
-          </Card>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

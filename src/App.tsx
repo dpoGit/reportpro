@@ -7,6 +7,7 @@ import {
 import SiteAuditLayout from "@/polymet/layouts/site-audit-layout";
 import Dashboard from "@/polymet/pages/dashboard";
 import Projects from "@/polymet/pages/projects";
+import CreateProjectPage from "@/polymet/pages/create-project";
 import ProjectDetails from "@/polymet/pages/project-details";
 import IssueDetails from "@/polymet/pages/issue-details";
 import Reports from "@/polymet/pages/reports";
@@ -16,7 +17,7 @@ import Media from "@/polymet/pages/media";
 import Settings from "@/polymet/pages/settings";
 import Profile from "@/polymet/pages/profile";
 import Users from "@/polymet/pages/users";
-import HelpAndSupport from "@/polymet/pages/help-and-support"; // Import the HelpAndSupport component
+import HelpAndSupport from "@/polymet/pages/help-and-support";
 import AddIssuePage from "@/polymet/pages/add-issue";
 import { useState } from "react";
 import { PROJECTS, Project } from "@/polymet/data/site-audit-data";
@@ -48,6 +49,15 @@ export default function SiteAuditPrototype() {
         />
 
         <Route
+          path="/create-project"
+          element={
+            <SiteAuditLayout>
+              <CreateProjectPage projects={projects} setProjects={setProjects} />
+            </SiteAuditLayout>
+          }
+        />
+
+        <Route
           path="/project/:projectId"
           element={
             <SiteAuditLayout>
@@ -66,7 +76,7 @@ export default function SiteAuditPrototype() {
         />
 
         <Route
-          path="/issue/:projectId/:issueId"
+          path="/project/:projectId/issues"
           element={
             <SiteAuditLayout>
               <IssueDetails projects={projects} setProjects={setProjects} />
@@ -137,7 +147,6 @@ export default function SiteAuditPrototype() {
           }
         />
 
-        {/* Add the route for the Help & Support page */}
         <Route
           path="/help-and-support"
           element={

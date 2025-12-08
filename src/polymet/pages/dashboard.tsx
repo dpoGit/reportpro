@@ -180,38 +180,10 @@ export default function Dashboard({ projects, setProjects }: DashboardProps) {
             Manage your projects and issues efficiently
           </p>
         </div>
-        <Dialog
-          open={isProjectFormOpen}
-          onOpenChange={(open) => {
-            setIsProjectFormOpen(open);
-            if (!open) {
-              setEditingProject(null); // Clear editing state when dialog closes
-            }
-          }}
-        >
-          <DialogTrigger asChild>
-            <Button onClick={() => setEditingProject(null)}>
-              <PlusIcon className="mr-2 h-4 w-4" />
-              New Project
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>
-                {editingProject ? "Edit Project" : "Create New Project"}
-              </DialogTitle>
-              <DialogDescription>
-                {editingProject
-                  ? "Update details for your project"
-                  : "Add details for your new project"}
-              </DialogDescription>
-            </DialogHeader>
-            <ProjectForm
-              onSubmit={handleSaveProject}
-              initialData={editingProject ? projectToFormData(editingProject) : undefined}
-            />
-          </DialogContent>
-        </Dialog>
+        <Button onClick={() => window.location.href = '/create-project'}>
+          <PlusIcon className="mr-2 h-4 w-4" />
+          New Project
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -491,38 +463,10 @@ export default function Dashboard({ projects, setProjects }: DashboardProps) {
                 <p className="text-muted-foreground mb-6">
                   Select a project from the list or create a new one
                 </p>
-                <Dialog
-                  open={isProjectFormOpen}
-                  onOpenChange={(open) => {
-                    setIsProjectFormOpen(open);
-                    if (!open) {
-                      setEditingProject(null); // Clear editing state when dialog closes
-                    }
-                  }}
-                >
-                  <DialogTrigger asChild>
-                    <Button onClick={() => setEditingProject(null)}>
-                      <PlusIcon className="mr-2 h-4 w-4" />
-                      Create New Project
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
-                      <DialogTitle>
-                        {editingProject ? "Edit Project" : "Create New Project"}
-                      </DialogTitle>
-                      <DialogDescription>
-                        {editingProject
-                          ? "Update details for your project"
-                          : "Add details for your new project"}
-                      </DialogDescription>
-                    </DialogHeader>
-                    <ProjectForm
-                      onSubmit={handleSaveProject}
-                      initialData={editingProject ? projectToFormData(editingProject) : undefined}
-                    />
-                  </DialogContent>
-                </Dialog>
+                <Button onClick={() => window.location.href = '/create-project'}>
+                  <PlusIcon className="mr-2 h-4 w-4" />
+                  Create New Project
+                </Button>
               </div>
             </Card>
           )}

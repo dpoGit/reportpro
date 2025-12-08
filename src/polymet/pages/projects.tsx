@@ -15,14 +15,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+
 import {
   Select,
   SelectContent,
@@ -43,7 +36,7 @@ import {
   FileTextIcon,
 } from "lucide-react";
 import { Project, Client } from "@/polymet/data/site-audit-data";
-import ProjectForm, { ProjectFormData } from "@/polymet/components/project-form";
+
 
 interface ProjectsProps {
   projects: Project[];
@@ -55,32 +48,11 @@ export default function Projects({ projects, setProjects }: ProjectsProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [sortBy, setSortBy] = useState<"date" | "name" | "issues">("date");
-  const [isProjectFormOpen, setIsProjectFormOpen] = useState(false);
 
   // Helper to get client name safely
   const getClientName = (client: string | Client | undefined): string => {
     if (!client) return '';
     return typeof client === 'string' ? client : client.name;
-  };
-
-  const handleCreateProject = (projectData: ProjectFormData) => {
-    const newProject: Project = {
-      id: `proj-${Date.now()}`,
-      title: projectData.title,
-      reference: projectData.reference,
-      date: projectData.date.toISOString().split("T")[0],
-      thumbnail: projectData.thumbnail || "https://picsum.photos/seed/" + Date.now() + "/400/200",
-      client: projectData.client,
-      location: projectData.location,
-      notes: projectData.notes,
-      status: "Pending",
-      progress: 0,
-      issueCount: 0,
-      issues: [],
-    };
-
-    setProjects([newProject, ...projects]);
-    setIsProjectFormOpen(false);
   };
 
   const handleDeleteProject = (projectId: string) => {
@@ -114,23 +86,10 @@ export default function Projects({ projects, setProjects }: ProjectsProps) {
             Manage and organize your site audit projects
           </p>
         </div>
-        <Dialog open={isProjectFormOpen} onOpenChange={setIsProjectFormOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <PlusIcon className="mr-2 h-4 w-4" />
-              New Project
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Create New Project</DialogTitle>
-              <DialogDescription>
-                Add details for your new project
-              </DialogDescription>
-            </DialogHeader>
-            <ProjectForm onSubmit={handleCreateProject} />
-          </DialogContent>
-        </Dialog>
+        <Button onClick={() => window.location.href = '/create-project'}>
+          <PlusIcon className="mr-2 h-4 w-4" />
+          New Project
+        </Button>
       </div>
 
       <Card className="mb-6">
@@ -357,7 +316,7 @@ export default function Projects({ projects, setProjects }: ProjectsProps) {
               ? "No projects match your search criteria"
               : "Create your first project to get started"}
           </p>
-          <Button onClick={() => setIsProjectFormOpen(true)}>
+          <Button onClick={() => window.location.href = '/create-project'}>
             <PlusIcon className="mr-2 h-4 w-4" />
             Create New Project
           </Button>

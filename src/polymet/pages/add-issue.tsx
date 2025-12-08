@@ -157,11 +157,17 @@ export default function AddIssuePage({ projects, setProjects }: AddIssuePageProp
             priority: (formData.priority === IssuePriority.CRITICAL ? 'high' : formData.priority.toLowerCase()) as "low" | "medium" | "high",
         };
 
-        // Add main image
+        // Add main image with bounding boxes
         if (selectedImage) {
             newIssue.images.push({
                 url: selectedImage,
-                caption: 'Main Image'
+                caption: 'Main Image',
+                boundingBoxes: snagItems.map(item => ({
+                    box_2d: item.box_2d,
+                    label: item.label,
+                    description: item.description,
+                    color: item.color
+                }))
             });
         }
 

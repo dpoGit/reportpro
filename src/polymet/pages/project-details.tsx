@@ -109,7 +109,7 @@ export default function ProjectDetails({
         </Button>
         <div>
           <h1 className="text-3xl font-bold">{project.title}</h1>
-          <p className="text-muted-foreground">{project.reference}</p>
+          <p className="text-muted-foreground">{project.location}</p>
         </div>
       </div>
 
@@ -297,7 +297,7 @@ export default function ProjectDetails({
                   {filteredIssues.map((issue: Issue) => (
                     <IssueListItem
                       key={issue.id}
-                      to={`/issue/${project.id}/${issue.id}`}
+                      to={`/project/${project.id}/issues`}
                       title={issue.title}
                       assignee={issue.assignee}
                       imageUrl={issue.images[0]?.url}

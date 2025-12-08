@@ -116,7 +116,7 @@ export default function Issues({ projects, setProjects }: IssuesProps) {
         onValueChange={(value) => setSelectedTab(value)}
       >
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
-          <TabsList>
+          <TabsList className="bg-slate-200 dark:bg-slate-800">
             <TabsTrigger value="all">All Issues</TabsTrigger>
             <TabsTrigger value="open">Open</TabsTrigger>
             <TabsTrigger value="in-progress">In Progress</TabsTrigger>
@@ -238,7 +238,7 @@ function IssuesList({ issues, onAddIssue }: IssuesListProps) {
             assignee={issue.assignee}
             imageUrl={issue.images[0]?.url}
             status={issue.status}
-            to={`/issue/${issue.projectId}/${issue.id}`}
+            to={`/project/${issue.projectId}/issues`}
           />
         </div>
       ))}

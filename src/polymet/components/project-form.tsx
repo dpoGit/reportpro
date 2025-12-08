@@ -24,6 +24,7 @@ import ImageUpload from "@/polymet/components/image-upload"; // Import ImageUplo
 
 interface ProjectFormProps {
   onSubmit?: (project: ProjectFormData) => void;
+  onCancel?: () => void;
   initialData?: Partial<ProjectFormData>;
 }
 
@@ -45,6 +46,7 @@ export interface ProjectFormData {
 
 export default function ProjectForm({
   onSubmit,
+  onCancel,
   initialData,
 }: ProjectFormProps) {
   const [formData, setFormData] = useState<ProjectFormData>({
@@ -260,8 +262,13 @@ export default function ProjectForm({
             />
           </div>
         </CardContent>
-        <CardFooter>
-          <Button type="submit" className="w-full">
+        <CardFooter className="flex gap-2">
+          {onCancel && (
+            <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
+              Cancel
+            </Button>
+          )}
+          <Button type="submit" className="flex-1">
             Save Project
           </Button>
         </CardFooter>
