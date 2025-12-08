@@ -199,7 +199,7 @@ export default function AddIssuePage({ projects, setProjects }: AddIssuePageProp
     return (
         // Main Container
         // Adjusted height to fit within layout (assuming layout has header)
-        <div className="h-[calc(100vh-8rem)] w-full flex flex-col md:flex-row md:overflow-hidden bg-white dark:bg-[#0B1120] text-slate-900 dark:text-gray-100 transition-colors duration-300 rounded-xl border border-neutral-200 dark:border-slate-800 shadow-sm">
+        <div className="h-[calc(100vh-8rem)] w-full flex flex-col md:flex-row md:overflow-hidden bg-white dark:bg-background text-slate-900 dark:text-gray-100 transition-colors duration-300 rounded-xl border border-neutral-200 dark:border-slate-800 shadow-sm">
 
             {/* LEFT PANEL: Camera / Image Display */}
             <div className="relative shrink-0 w-full h-[40vh] min-h-[400px] md:h-full md:flex-1 bg-black flex flex-col overflow-hidden border-b border-white/10 md:border-b-0 md:border-r">
@@ -221,8 +221,8 @@ export default function AddIssuePage({ projects, setProjects }: AddIssuePageProp
                                 className={`
                                     group relative overflow-hidden flex items-center gap-3 px-8 py-3.5 rounded-full font-bold text-white shadow-xl transition-all duration-300 border-2
                                     ${isAnalyzing
-                                        ? 'bg-amber-400 cursor-wait border-[#F59D0C]'
-                                        : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:scale-105 hover:shadow-amber-500/30 active:scale-95 border-transparent active:border-[#F59D0C]'
+                                        ? 'bg-amber-400 cursor-wait border-primary'
+                                        : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:scale-105 hover:shadow-amber-500/30 active:scale-95 border-transparent active:border-primary'
                                     }
                                 `}
                             >
@@ -243,7 +243,7 @@ export default function AddIssuePage({ projects, setProjects }: AddIssuePageProp
                 </div>
 
                 {/* Supporting Images - Fixed at bottom of left panel */}
-                <div className="shrink-0 bg-slate-50 dark:bg-[#0B1120] border-t border-slate-200 dark:border-slate-800 z-20">
+                <div className="shrink-0 bg-slate-50 dark:bg-background border-t border-slate-200 dark:border-slate-800 z-20">
                     <SupportingImages
                         images={supportingImages}
                         onUpdate={handleSupportingImageUpdate}
@@ -252,9 +252,9 @@ export default function AddIssuePage({ projects, setProjects }: AddIssuePageProp
             </div>
 
             {/* RIGHT PANEL: Sidebar (Report & Form) */}
-            <div className="flex-1 w-full md:w-[420px] lg:w-[480px] md:h-full bg-white dark:bg-[#0B1120] shadow-2xl z-20 flex flex-col relative">
+            <div className="flex-1 w-full md:w-[420px] lg:w-[480px] md:h-full bg-white dark:bg-background shadow-2xl z-20 flex flex-col relative">
                 {/* Project Name Header */}
-                <div className="p-4 border-b border-neutral-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0B1120]/50">
+                <div className="p-4 border-b border-neutral-200 dark:border-slate-800 bg-slate-50 dark:bg-background/50">
                     <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
                         Project: <span className="text-foreground font-semibold">{projects.find(p => p.id === projectId)?.title || 'Unknown Project'}</span>
                     </h2>

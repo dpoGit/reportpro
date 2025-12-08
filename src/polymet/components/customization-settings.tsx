@@ -102,7 +102,7 @@ export default function CustomizationSettings({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center bg-gray-900 p-3">
+      <div className="flex items-center bg-sidebar p-3">
         <Button variant="ghost" size="sm" onClick={onBack}>
           <ArrowLeftIcon className="h-4 w-4 mr-1" />
           Settings
@@ -233,7 +233,7 @@ export default function CustomizationSettings({
           </p>
           <Button
             variant="outline"
-            className="mt-4 text-blue-500"
+            className="mt-4 text-primary"
             onClick={handleRestoreDefaults}
           >
             Restore Default Custom Wordings

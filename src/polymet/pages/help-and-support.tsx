@@ -74,11 +74,11 @@ export default function HelpAndSupport() {
 
       <Card>
         <CardHeader>
-          <CardTitle>How to Use Report<span className="text-[#FF8C00]">Pro</span></CardTitle>
+          <CardTitle>How to Use Report<span className="text-primary">Pro</span></CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 text-muted-foreground">
           <p>
-            Welcome to Report<span className="text-[#FF8C00]">Pro</span>! This guide will walk you through the basic
+            Welcome to Report<span className="text-primary">Pro</span>! This guide will walk you through the basic
             steps to get started and make the most of our powerful site auditing
             tool.
           </p>
