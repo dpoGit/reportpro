@@ -3,21 +3,9 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  ArrowDownIcon,
   CalendarIcon,
   DownloadIcon,
   FileTextIcon,
@@ -31,11 +19,27 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Link } from "react-router-dom";
 
+// Type for report
+interface Report {
+  id: string;
+  projectId: string;
+  title: string;
+  projectTitle: string;
+  date: string;
+  status: string;
+  author: {
+    name: string;
+    avatar: string;
+  };
+  issueCount: number | undefined;
+  format: string;
+}
+
 export default function Reports() {
   const [selectedTab, setSelectedTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const reports = PROJECTS.map((project) => ({
+  const reports: Report[] = PROJECTS.map((project) => ({
     id: `report-${project.id}`,
     projectId: project.id,
     title: `${project.title} Audit Report`,
@@ -139,13 +143,18 @@ export default function Reports() {
   );
 }
 
-function ReportsList({ reports }) {
+function ReportsList({ reports }: { reports: Report[] }) {
   // Helper to sanitize filenames
   const sanitizeFilename = (name: string) => {
     return name.replace(/[^a-z0-9\s\-_.]/gi, '').replace(/\s+/g, '_');
   };
 
-  const handleDownloadForReport = (e: React.MouseEvent, report: any) => {
+  const handleGenerateReport = () => {
+    console.log("Generate report clicked");
+    alert("Report generation coming soon!");
+  };
+
+  const handleDownloadForReport = (e: React.MouseEvent, report: Report) => {
     e.stopPropagation(); // Prevent the click from bubbling up to the Link
     e.preventDefault(); // Prevent the default action of the Link
 
@@ -229,7 +238,7 @@ function ReportsList({ reports }) {
 
   return (
     <div className="grid grid-cols-1 gap-4">
-      {reports.map((report) => (
+      {reports.map((report: Report) => (
         <Link key={report.id} to={`/report/${report.projectId}`} className="block">
           <Card className="overflow-hidden transition-colors hover:bg-accent/50 hover:border-primary">
             <CardContent className="p-0">
@@ -272,7 +281,7 @@ function ReportsList({ reports }) {
                       {report.author.name}
                     </div>
                     <div>
-                      {report.issueCount} issue{report.issueCount !== 1 && "s"}
+                      {report.issueCount || 0} issue{(report.issueCount || 0) !== 1 && "s"}
                     </div>
                   </div>
                 </div>

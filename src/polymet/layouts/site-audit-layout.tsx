@@ -233,9 +233,9 @@ export default function SiteAuditLayout({ children }: SiteAuditLayoutProps) {
               const { title, description } = getPageInfo(location.pathname);
 
               return (
-                <div className="flex items-center justify-center gap-4">
-                  <h1 className="text-3xl font-bold flex items-center gap-2 text-muted-foreground">
-                    {title === "ReportPro" && <CheckSquareIcon className="h-7 w-7 text-primary" />}
+                <div className="flex items-center gap-3">
+                  <h1 className="text-lg font-semibold flex items-center gap-2 text-foreground">
+                    {title === "ReportPro" && <CheckSquareIcon className="h-5 w-5 text-primary" />}
                     {title === "ReportPro" ? (
                       <span>Report<span className="text-orange-500">Pro</span></span>
                     ) : (
@@ -243,9 +243,12 @@ export default function SiteAuditLayout({ children }: SiteAuditLayoutProps) {
                     )}
                   </h1>
                   {description && (
-                    <p className="text-muted-foreground italic">
-                      {description}
-                    </p>
+                    <>
+                      <span className="text-muted-foreground/50">|</span>
+                      <p className="text-sm text-muted-foreground">
+                        {description}
+                      </p>
+                    </>
                   )}
                 </div>
               );

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -9,19 +10,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { ClipboardIcon, FilterIcon, PlusIcon } from "lucide-react";
+import { ClipboardIcon, FilterIcon, SparklesIcon } from "lucide-react";
 import { Project, Issue } from "@/polymet/data/site-audit-data";
 import { Input } from "@/components/ui/input";
 import IssueListItem from "@/polymet/components/issue-list-item";
-import IssueForm, { IssueFormData } from "@/polymet/components/issue-form";
 
 interface IssuesProps {
   projects: Project[];
@@ -29,11 +21,12 @@ interface IssuesProps {
 }
 
 export default function Issues({ projects, setProjects }: IssuesProps) {
+  const navigate = useNavigate();
   const [selectedTab, setSelectedTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [selectedProjectId, setSelectedProjectId] = useState<string>(projects[0]?.id || "");
 
   const allIssues = projects.flatMap((project) =>
     project.issues.map((issue) => ({
@@ -78,38 +71,11 @@ export default function Issues({ projects, setProjects }: IssuesProps) {
     }
   });
 
-  const handleCreateIssue = (formData: IssueFormData) => {
-    if (projects.length === 0) return;
-
-    const newIssue: Issue = {
-      id: `issue-${Date.now()}`,
-      title: formData.title,
-      description: formData.comments,
-      assignee: {
-        name: formData.assignee || "Unassigned",
-        avatar: "https://github.com/shadcn.png",
-      },
-      status: formData.status,
-      priority: formData.priority,
-      images: formData.images.map((url) => ({
-        url,
-        timestamp: new Date().toISOString(),
-      })),
-      comments: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    const updatedProjects = [...projects];
-    const targetProject = updatedProjects[0];
-    targetProject.issues.unshift(newIssue);
-    targetProject.issueCount = targetProject.issues.length;
-
-    setProjects(updatedProjects);
-    setIsCreateModalOpen(false);
+  const handleAddIssue = () => {
+    if (selectedProjectId) {
+      navigate(`/project/${selectedProjectId}/add-issue`);
+    }
   };
-
-  const openCreateModal = () => setIsCreateModalOpen(true);
 
   return (
     <div className="container mx-auto p-4 md:p-6">
@@ -120,26 +86,28 @@ export default function Issues({ projects, setProjects }: IssuesProps) {
             Manage and track all site audit issues
           </p>
         </div>
-        <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={openCreateModal}>
-              <PlusIcon className="mr-2 h-4 w-4" />
-              Create New Issue
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Create New Issue</DialogTitle>
-              <DialogDescription>
-                Fill in the details to create a new issue. It will be added to the first project.
-              </DialogDescription>
-            </DialogHeader>
-            <IssueForm
-              onSubmit={handleCreateIssue}
-              onCancel={() => setIsCreateModalOpen(false)}
-            />
-          </DialogContent>
-        </Dialog>
+        <div className="flex items-center gap-2">
+          <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
+            <SelectTrigger className="w-[280px]">
+              <SelectValue placeholder="Select project" />
+            </SelectTrigger>
+            <SelectContent>
+              {projects.map((project) => (
+                <SelectItem key={project.id} value={project.id}>
+                  {project.title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            size="sm"
+            onClick={handleAddIssue}
+            disabled={!selectedProjectId || projects.length === 0}
+          >
+            <SparklesIcon className="mr-2 h-4 w-4" />
+            + Add Issue/Snag
+          </Button>
+        </div>
       </div>
 
       <Tabs
@@ -217,16 +185,16 @@ export default function Issues({ projects, setProjects }: IssuesProps) {
         </div>
 
         <TabsContent value="all" className="mt-0">
-          <IssuesList issues={sortedIssues} onOpenCreateModal={openCreateModal} />
+          <IssuesList issues={sortedIssues} onAddIssue={handleAddIssue} />
         </TabsContent>
         <TabsContent value="open" className="mt-0">
-          <IssuesList issues={sortedIssues} onOpenCreateModal={openCreateModal} />
+          <IssuesList issues={sortedIssues} onAddIssue={handleAddIssue} />
         </TabsContent>
         <TabsContent value="in-progress" className="mt-0">
-          <IssuesList issues={sortedIssues} onOpenCreateModal={openCreateModal} />
+          <IssuesList issues={sortedIssues} onAddIssue={handleAddIssue} />
         </TabsContent>
         <TabsContent value="resolved" className="mt-0">
-          <IssuesList issues={sortedIssues} onOpenCreateModal={openCreateModal} />
+          <IssuesList issues={sortedIssues} onAddIssue={handleAddIssue} />
         </TabsContent>
       </Tabs>
     </div>
@@ -235,10 +203,10 @@ export default function Issues({ projects, setProjects }: IssuesProps) {
 
 interface IssuesListProps {
   issues: (Issue & { projectId: string; projectTitle: string })[];
-  onOpenCreateModal: () => void;
+  onAddIssue: () => void;
 }
 
-function IssuesList({ issues, onOpenCreateModal }: IssuesListProps) {
+function IssuesList({ issues, onAddIssue }: IssuesListProps) {
   if (issues.length === 0) {
     return (
       <Card className="w-full">
@@ -249,8 +217,9 @@ function IssuesList({ issues, onOpenCreateModal }: IssuesListProps) {
             No issues match your current filters. Try adjusting your search or
             create a new issue.
           </p>
-          <Button className="mt-6" onClick={onOpenCreateModal}>
-            Create New Issue
+          <Button className="mt-6" size="sm" onClick={onAddIssue}>
+            <SparklesIcon className="mr-2 h-4 w-4" />
+            + Add Issue/Snag
           </Button>
         </CardContent>
       </Card>

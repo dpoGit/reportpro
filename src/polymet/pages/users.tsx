@@ -1,8 +1,7 @@
-import React from "react";
+import { useState } from "react";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -57,7 +56,7 @@ const USERS = [
 ];
 
 export default function Users() {
-  const [searchQuery, setSearchQuery] = React.useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const filteredUsers = USERS.filter(
     (user) =>

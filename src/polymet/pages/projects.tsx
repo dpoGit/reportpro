@@ -32,7 +32,6 @@ import {
 } from "@/components/ui/select";
 import {
   CalendarIcon,
-  FilterIcon,
   FolderIcon,
   GridIcon,
   ListIcon,
@@ -43,8 +42,8 @@ import {
   PencilIcon,
   FileTextIcon,
 } from "lucide-react";
-import { PROJECTS, Project } from "@/polymet/data/site-audit-data"; // Import Project type
-import ProjectForm, { ProjectFormData } from "@/polymet/components/project-form"; // Import ProjectFormData
+import { Project, Client } from "@/polymet/data/site-audit-data";
+import ProjectForm, { ProjectFormData } from "@/polymet/components/project-form";
 
 interface ProjectsProps {
   projects: Project[];
@@ -58,21 +57,29 @@ export default function Projects({ projects, setProjects }: ProjectsProps) {
   const [sortBy, setSortBy] = useState<"date" | "name" | "issues">("date");
   const [isProjectFormOpen, setIsProjectFormOpen] = useState(false);
 
-  const handleCreateProject = (projectData: ProjectFormData) => { // Use ProjectFormData type
-    const newProject = {
+  // Helper to get client name safely
+  const getClientName = (client: string | Client | undefined): string => {
+    if (!client) return '';
+    return typeof client === 'string' ? client : client.name;
+  };
+
+  const handleCreateProject = (projectData: ProjectFormData) => {
+    const newProject: Project = {
       id: `proj-${Date.now()}`,
       title: projectData.title,
       reference: projectData.reference,
       date: projectData.date.toISOString().split("T")[0],
-      thumbnail: projectData.thumbnail || "https://picsum.photos/seed/" + Date.now() + "/400/200", // Use uploaded thumbnail or fallback
+      thumbnail: projectData.thumbnail || "https://picsum.photos/seed/" + Date.now() + "/400/200",
       client: projectData.client,
       location: projectData.location,
       notes: projectData.notes,
+      status: "Pending",
+      progress: 0,
       issueCount: 0,
       issues: [],
     };
 
-    setProjects([newProject, ...projects]); // Use passed setProjects
+    setProjects([newProject, ...projects]);
     setIsProjectFormOpen(false);
   };
 
@@ -83,8 +90,8 @@ export default function Projects({ projects, setProjects }: ProjectsProps) {
   const filteredProjects = projects.filter(
     (project) =>
       project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      project.reference.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      project.client?.name.toLowerCase().includes(searchQuery.toLowerCase())
+      (project.reference?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+      getClientName(project.client).toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const sortedProjects = [...filteredProjects].sort((a, b) => {
@@ -93,7 +100,7 @@ export default function Projects({ projects, setProjects }: ProjectsProps) {
     } else if (sortBy === "name") {
       return a.title.localeCompare(b.title);
     } else if (sortBy === "issues") {
-      return b.issueCount - a.issueCount;
+      return (b.issueCount || 0) - (a.issueCount || 0);
     }
     return 0;
   });
@@ -224,7 +231,7 @@ export default function Projects({ projects, setProjects }: ProjectsProps) {
                     </div>
                     {project.client && (
                       <div className="mt-2 text-sm text-muted-foreground">
-                        Client: {project.client.name}
+                        Client: {getClientName(project.client)}
                       </div>
                     )}
                   </CardContent>

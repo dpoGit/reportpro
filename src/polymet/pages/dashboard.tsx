@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -25,23 +26,19 @@ import {
 } from "@/components/ui/dialog";
 import {
   CalendarIcon,
-  CheckSquareIcon, // Added CheckSquareIcon
-  FileTextIcon,
+  CheckSquareIcon,
   FilterIcon,
   FolderIcon,
-  ImageIcon,
   MoreHorizontalIcon,
   PencilIcon,
   PlusIcon,
   SearchIcon,
   TrashIcon,
+  SparklesIcon,
 } from "lucide-react";
-import SiteAuditCard from "@/polymet/components/site-audit-card";
 import IssueListItem from "@/polymet/components/issue-list-item";
-import ProjectForm, { ProjectFormData } from "@/polymet/components/project-form"; // Import ProjectFormData
-import IssueForm from "@/polymet/components/issue-form";
-import { Project, Issue, PROJECTS } from "@/polymet/data/site-audit-data";
-import { useIsMobile } from "@/hooks/use-mobile"; // Import the hook
+import ProjectForm, { ProjectFormData } from "@/polymet/components/project-form";
+import { Project, Client } from "@/polymet/data/site-audit-data";
 
 interface DashboardProps {
   projects: Project[];
@@ -49,20 +46,51 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ projects, setProjects }: DashboardProps) {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isProjectFormOpen, setIsProjectFormOpen] = useState(false);
-  const [editingProject, setEditingProject] = useState<Project | null>(null); // New state for editing
-  const [isIssueFormOpen, setIsIssueFormOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
 
-  const isMobile = useIsMobile(); // Use the hook
-  const projectDetailsCardRef = useRef<HTMLDivElement>(null); // Ref for the project details card
+  const projectDetailsCardRef = useRef<HTMLDivElement>(null);
+
+  // Helper to get client name for display
+  const getClientName = (client: string | Client | undefined): string => {
+    if (!client) return '';
+    return typeof client === 'string' ? client : client.name;
+  };
+
+  // Helper to get client as object (for detailed display)
+  const getClientObject = (client: string | Client | undefined): Client | null => {
+    if (!client) return null;
+    return typeof client === 'object' ? client : null;
+  };
+
+  // Helper to convert Project to ProjectFormData format for the form
+  const projectToFormData = (project: Project): Partial<ProjectFormData> => {
+    const clientObj = typeof project.client === 'object' ? project.client : null;
+    return {
+      id: project.id,
+      title: project.title,
+      reference: project.reference,
+      client: {
+        name: clientObj?.name || (typeof project.client === 'string' ? project.client : ''),
+        contact: clientObj?.contact || '',
+        email: clientObj?.email || '',
+        phone: clientObj?.phone || '',
+      },
+      location: project.location,
+      notes: project.notes,
+      thumbnail: project.thumbnail || null,
+      date: new Date(project.date),
+    };
+  };
 
   const filteredProjects = projects.filter(
     (project) =>
       project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      project.reference.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      project.client?.name.toLowerCase().includes(searchQuery.toLowerCase())
+      (project.reference?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+      getClientName(project.client).toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleProjectSelect = (project: Project) => {
@@ -72,12 +100,20 @@ export default function Dashboard({ projects, setProjects }: DashboardProps) {
   const handleSaveProject = (projectData: ProjectFormData) => {
     if (projectData.id) {
       // Editing existing project
+      const existingProject = projects.find((p) => p.id === projectData.id);
       const updatedProject: Project = {
-        ...projectData,
+        id: projectData.id,
+        title: projectData.title,
+        reference: projectData.reference,
+        client: projectData.client,
+        location: projectData.location,
+        notes: projectData.notes,
+        thumbnail: projectData.thumbnail || undefined,
         date: projectData.date.toISOString().split("T")[0],
-        issueCount:
-          projects.find((p) => p.id === projectData.id)?.issueCount || 0,
-        issues: projects.find((p) => p.id === projectData.id)?.issues || [],
+        status: existingProject?.status || "Pending",
+        progress: existingProject?.progress || 0,
+        issueCount: existingProject?.issueCount || 0,
+        issues: existingProject?.issues || [],
       };
       setProjects(
         projects.map((p) => (p.id === updatedProject.id ? updatedProject : p))
@@ -96,6 +132,8 @@ export default function Dashboard({ projects, setProjects }: DashboardProps) {
         client: projectData.client,
         location: projectData.location,
         notes: projectData.notes,
+        status: "Pending",
+        progress: 0,
         issueCount: 0,
         issues: [],
       };
@@ -105,37 +143,10 @@ export default function Dashboard({ projects, setProjects }: DashboardProps) {
     setEditingProject(null); // Clear editing state
   };
 
-  const handleCreateIssue = (issueData: any) => {
-    if (!selectedProject) return;
-
-    const newIssue: Issue = {
-      id: `issue-${Date.now()}`,
-      title: issueData.title,
-      assignee: {
-        name: issueData.assignee,
-        avatar: "https://github.com/yusufhilmi.png",
-      },
-      status: issueData.status,
-      priority: issueData.priority,
-      comments: issueData.comments,
-      images: issueData.images.map((url: string) => ({
-        url,
-        timestamp: new Date().toISOString(),
-      })),
-      createdAt: new Date().toISOString(),
-    };
-
-    const updatedProject = {
-      ...selectedProject,
-      issues: [newIssue, ...selectedProject.issues],
-      issueCount: selectedProject.issueCount + 1,
-    };
-
-    setProjects(
-      projects.map((p) => (p.id === selectedProject.id ? updatedProject : p))
-    );
-    setSelectedProject(updatedProject);
-    setIsIssueFormOpen(false);
+  const handleAddIssue = () => {
+    if (selectedProject) {
+      navigate(`/project/${selectedProject.id}/add-issue`);
+    }
   };
 
   const handleDeleteProject = (projectId: string) => {
@@ -197,7 +208,7 @@ export default function Dashboard({ projects, setProjects }: DashboardProps) {
             </DialogHeader>
             <ProjectForm
               onSubmit={handleSaveProject}
-              initialData={editingProject || undefined}
+              initialData={editingProject ? projectToFormData(editingProject) : undefined}
             />
           </DialogContent>
         </Dialog>
@@ -243,11 +254,10 @@ export default function Dashboard({ projects, setProjects }: DashboardProps) {
                       onClick={() => handleProjectSelect(project)}
                     >
                       <div
-                        className={`border rounded-lg overflow-hidden transition-colors ${
-                          selectedProject?.id === project.id
-                            ? "border-orange-500 bg-orange-500/10" // Changed to orange highlight
-                            : "hover:bg-accent/50"
-                        }`}
+                        className={`border rounded-lg overflow-hidden transition-colors ${selectedProject?.id === project.id
+                          ? "border-orange-500 bg-orange-500/10" // Changed to orange highlight
+                          : "hover:bg-accent/50"
+                          }`}
                       >
                         <div className="p-3">
                           <div className="flex justify-between items-start">
@@ -380,29 +390,10 @@ export default function Dashboard({ projects, setProjects }: DashboardProps) {
                         {selectedProject.issueCount}{" "}
                         {selectedProject.issueCount === 1 ? "Issue" : "Issues"}
                       </h3>
-                      <Dialog
-                        open={isIssueFormOpen}
-                        onOpenChange={setIsIssueFormOpen}
-                      >
-                        <DialogTrigger asChild>
-                          <Button size="sm">
-                            <PlusIcon className="mr-2 h-4 w-4" />
-                            Add Issue
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-                          <DialogHeader>
-                            <DialogTitle>Create New Issue</DialogTitle>
-                            <DialogDescription>
-                              Add details for the new issue
-                            </DialogDescription>
-                          </DialogHeader>
-                          <IssueForm
-                            onSubmit={handleCreateIssue}
-                            onCancel={() => setIsIssueFormOpen(false)}
-                          />
-                        </DialogContent>
-                      </Dialog>
+                      <Button size="sm" onClick={handleAddIssue}>
+                        <SparklesIcon className="mr-2 h-4 w-4" />
+                        + Add Issue/Snag
+                      </Button>
                     </div>
                     <div className="space-y-3 max-h-[500px] overflow-y-auto">
                       {selectedProject.issues.length > 0 ? (
@@ -425,45 +416,49 @@ export default function Dashboard({ projects, setProjects }: DashboardProps) {
                   </TabsContent>
                   <TabsContent value="details">
                     <div className="space-y-6">
-                      {selectedProject.client && (
-                        <div>
-                          <h3 className="text-lg font-medium mb-2">
-                            Client Information
-                          </h3>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <p className="text-sm text-muted-foreground">
-                                Client Name
-                              </p>
-                              <p>{selectedProject.client.name}</p>
+                      {(() => {
+                        const clientObj = getClientObject(selectedProject.client);
+                        if (!clientObj) return null;
+                        return (
+                          <div>
+                            <h3 className="text-lg font-medium mb-2">
+                              Client Information
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <p className="text-sm text-muted-foreground">
+                                  Client Name
+                                </p>
+                                <p>{clientObj.name}</p>
+                              </div>
+                              {clientObj.contact && (
+                                <div>
+                                  <p className="text-sm text-muted-foreground">
+                                    Contact Person
+                                  </p>
+                                  <p>{clientObj.contact}</p>
+                                </div>
+                              )}
+                              {clientObj.email && (
+                                <div>
+                                  <p className="text-sm text-muted-foreground">
+                                    Email
+                                  </p>
+                                  <p>{clientObj.email}</p>
+                                </div>
+                              )}
+                              {clientObj.phone && (
+                                <div>
+                                  <p className="text-sm text-muted-foreground">
+                                    Phone
+                                  </p>
+                                  <p>{clientObj.phone}</p>
+                                </div>
+                              )}
                             </div>
-                            {selectedProject.client.contact && (
-                              <div>
-                                <p className="text-sm text-muted-foreground">
-                                  Contact Person
-                                </p>
-                                <p>{selectedProject.client.contact}</p>
-                              </div>
-                            )}
-                            {selectedProject.client.email && (
-                              <div>
-                                <p className="text-sm text-muted-foreground">
-                                  Email
-                                </p>
-                                <p>{selectedProject.client.email}</p>
-                              </div>
-                            )}
-                            {selectedProject.client.phone && (
-                              <div>
-                                <p className="text-sm text-muted-foreground">
-                                  Phone
-                                </p>
-                                <p>{selectedProject.client.phone}</p>
-                              </div>
-                            )}
                           </div>
-                        </div>
-                      )}
+                        );
+                      })()}
 
                       {selectedProject.location && (
                         <div>
@@ -524,7 +519,7 @@ export default function Dashboard({ projects, setProjects }: DashboardProps) {
                     </DialogHeader>
                     <ProjectForm
                       onSubmit={handleSaveProject}
-                      initialData={editingProject || undefined}
+                      initialData={editingProject ? projectToFormData(editingProject) : undefined}
                     />
                   </DialogContent>
                 </Dialog>

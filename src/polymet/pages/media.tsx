@@ -11,27 +11,55 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  CheckIcon,
   DownloadIcon,
   FilterIcon,
   FolderIcon,
   ImageIcon,
   MoreHorizontalIcon,
   PencilIcon,
-  PlusIcon,
   TrashIcon,
   UploadIcon,
 } from "lucide-react";
 import { PROJECTS } from "@/polymet/data/site-audit-data";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+
+// Type for media item
+interface MediaItem {
+  id: string;
+  url: string;
+  caption?: string;
+  location?: {
+    address?: string;
+    latitude?: number;
+    longitude?: number;
+  };
+  timestamp?: string;
+  projectId: string;
+  projectTitle: string;
+  issueId: string;
+  issueTitle: string;
+  date: string;
+}
+
+interface MediaGridProps {
+  items: MediaItem[];
+  selectedItems: string[];
+  onItemSelect: (id: string, checked: boolean) => void;
+  onLocationClick: (location: string) => void;
+}
+
+interface MediaListProps {
+  items: MediaItem[];
+  selectedItems: string[];
+  onItemSelect: (id: string, checked: boolean) => void;
+  onLocationClick: (location: string) => void;
+}
 
 export default function Media() {
   const [selectedTab, setSelectedTab] = useState("all");
@@ -70,19 +98,19 @@ export default function Media() {
   const filteredMedia =
     selectedTab === "all"
       ? mediaItems.filter((item) =>
-          item.issueTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.projectTitle.toLowerCase().includes(searchQuery.toLowerCase())
-        )
+        item.issueTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.projectTitle.toLowerCase().includes(searchQuery.toLowerCase())
+      )
       : selectedTab === "folders"
         ? [] // Folders tab displays folders, not individual media items
         : mediaItems.filter((image) => {
-            // For 'recent' tab, filter by date (last 7 days for example)
-            const sevenDaysAgo = new Date();
-            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-            return new Date(image.date) >= sevenDaysAgo &&
-                   (image.issueTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    image.projectTitle.toLowerCase().includes(searchQuery.toLowerCase()));
-          });
+          // For 'recent' tab, filter by date (last 7 days for example)
+          const sevenDaysAgo = new Date();
+          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+          return new Date(image.date) >= sevenDaysAgo &&
+            (image.issueTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              image.projectTitle.toLowerCase().includes(searchQuery.toLowerCase()));
+        });
 
   const handleItemSelect = (id: string, isChecked: boolean) => {
     setSelectedItems((prevSelectedItems) => {
@@ -381,7 +409,7 @@ export default function Media() {
   );
 }
 
-function MediaGrid({ items, selectedItems, onItemSelect, onLocationClick }) {
+function MediaGrid({ items, selectedItems, onItemSelect, onLocationClick }: MediaGridProps) {
   if (items.length === 0) {
     return (
       <Card className="w-full">
@@ -404,7 +432,7 @@ function MediaGrid({ items, selectedItems, onItemSelect, onLocationClick }) {
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-      {items.map((item) => (
+      {items.map((item: MediaItem) => (
         <Card key={item.id} className="overflow-hidden transition-colors hover:bg-accent/50 hover:border-primary">
           <div className="relative aspect-square">
             <img
@@ -416,7 +444,7 @@ function MediaGrid({ items, selectedItems, onItemSelect, onLocationClick }) {
             <div className="absolute top-2 left-2">
               <Checkbox
                 checked={selectedItems.includes(item.id)}
-                onCheckedChange={(checked) => onItemSelect(item.id, checked)}
+                onCheckedChange={(checked) => onItemSelect(item.id, checked === true)}
                 className="h-5 w-5 bg-white/80 backdrop-blur-sm"
               />
             </div>
@@ -425,7 +453,7 @@ function MediaGrid({ items, selectedItems, onItemSelect, onLocationClick }) {
                 variant="ghost"
                 size="sm"
                 className="absolute bottom-2 left-2 h-auto px-2 py-1 rounded-full bg-black/60 text-white hover:bg-orange-500 hover:text-white"
-                onClick={() => onLocationClick(item.location)}
+                onClick={() => onLocationClick(item.location?.address || '')}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -487,7 +515,7 @@ function MediaGrid({ items, selectedItems, onItemSelect, onLocationClick }) {
   );
 }
 
-function MediaList({ items, selectedItems, onItemSelect, onLocationClick }) {
+function MediaList({ items, selectedItems, onItemSelect, onLocationClick }: MediaListProps) {
   if (items.length === 0) {
     return (
       <Card className="w-full">
@@ -510,7 +538,7 @@ function MediaList({ items, selectedItems, onItemSelect, onLocationClick }) {
 
   return (
     <div className="space-y-2">
-      {items.map((item) => (
+      {items.map((item: MediaItem) => (
         <div
           key={item.id}
           className="flex items-center border rounded-md overflow-hidden transition-colors hover:bg-accent/50 hover:border-primary"
@@ -518,7 +546,7 @@ function MediaList({ items, selectedItems, onItemSelect, onLocationClick }) {
           <div className="flex items-center p-2">
             <Checkbox
               checked={selectedItems.includes(item.id)}
-              onCheckedChange={(checked) => onItemSelect(item.id, checked)}
+              onCheckedChange={(checked) => onItemSelect(item.id, checked === true)}
               className="mr-2"
             />
           </div>
@@ -542,7 +570,7 @@ function MediaList({ items, selectedItems, onItemSelect, onLocationClick }) {
               variant="ghost"
               size="sm"
               className="h-auto px-2 py-1 rounded-full bg-muted text-foreground hover:bg-orange-500 hover:text-white mr-4"
-              onClick={() => onLocationClick(item.location)}
+              onClick={() => onLocationClick(item.location?.address || '')}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
